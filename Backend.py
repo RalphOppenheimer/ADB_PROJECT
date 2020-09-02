@@ -23,7 +23,8 @@ class Database:
 
     #do testów
     def delete_product(self, barcode):
-        #Musi tutaj iść string/text w przeciwnym wypadku błąd
+        """barcode -> type: string"""
+        # ^docstringów się używa do zamieszczania informacji o metodzie/funkcji
         cur = create_engine(db_string)
         conn = cur.connect()
         s = text ("DELETE FROM products WHERE barcode = :bar")

@@ -2,6 +2,18 @@ from tkinter import ttk
 import tkinter as tk
 from tkcalendar import Calendar, DateEntry #This as well
 
+def cal_init_1():
+    def print_sel():
+        print(cal.selection_get())
+
+    top = tk.Toplevel(root)
+
+    cal = Calendar(top,
+                   font="Arial 14", selectmode='day',
+                   cursor="hand1", year=2018, month=2, day=5)
+    cal.pack(fill="both", expand=True)
+    ttk.Button(top, text="ok", command=print_sel).pack()
+
 class Frontend:
     def __init__(self, master):
         self.master = master
@@ -115,11 +127,8 @@ class Frontend:
         self.e_manage_weight.grid(row=1, column=3, sticky=tk.NW)
         self.e_manage_quantity = tk.Entry(self.lf_manage_supply, width=14, justify='left')
         self.e_manage_quantity.grid(row=1, column=5, sticky=tk.NW)
-
         self.e_report_path = tk.Entry(self.lf_report_generation, width=60, justify='left')
         self.e_report_path.grid(row=1, column=1, sticky=tk.E)
-
-
 
         # Other Buttons
         self.b_add_item = tk.Button(self.lf_add_item, text="Add item", width=10)
@@ -136,7 +145,10 @@ class Frontend:
         self.b_sell_mng.grid(row=2, column=0, columnspan=2, sticky=tk.NW)
         self.b_wasted_mng = tk.Button(self.lf_manage_supply, text="Classify as wasted", width=18)
         self.b_wasted_mng.grid(row=2, column=4, columnspan=2, sticky=tk.E)
-
+        self.b_prod_low_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_1)
+        self.b_prod_low_date.grid(row=0, column=8, sticky=tk.W)
+        self.b_prod_hi_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_2)
+        self.b_prod_hi_date.grid(row=1, column=8, sticky=tk.W)
         # Save button
         self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18)
         self.button_save.grid(row=2, column=2, columnspan=2, sticky=tk.E)
@@ -153,6 +165,34 @@ class Frontend:
         # self.cal = DateEntry(root_3, width=12, background='darkblue', date_pattern='yyyy-mm-dd',
         #                      foreground='white', borderwidth=2)
         # self.cal.pack(side=tk.LEFT, expand=True)
+
+    def cal_init_1(self):
+        top = tk.Tk()
+        def print_sel():
+            print(cal.selection_get())
+            self.e_prod_low_date.delete(0, tk.END)
+            self.e_prod_low_date.insert(0, str(cal.selection_get()))
+            top.destroy()
+
+        cal = Calendar(top,
+                       font="Arial 14", selectmode='day',
+                       cursor="hand1", year=2020, month=9, day=1)
+        cal.pack(fill="both", expand=True)
+        ttk.Button(top, text="ok", command=print_sel).pack()
+
+    def cal_init_2(self):
+        top = tk.Tk()
+        def print_sel():
+            print(cal.selection_get())
+            self.e_prod_hi_date.delete(0, tk.END)
+            self.e_prod_hi_date.insert(0, str(cal.selection_get()))
+            top.destroy()
+
+        cal = Calendar(top,
+                       font="Arial 14", selectmode='day',
+                       cursor="hand1", year=2020, month=9, day=1)
+        cal.pack(fill="both", expand=True)
+        ttk.Button(top, text="ok", command=print_sel).pack()
 
 
 if __name__ == "__main__":
