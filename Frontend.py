@@ -45,6 +45,7 @@ class Frontend:
 
         # Buffers used during operation
         self.data_records_buffer = pd.DataFrame
+        self.query_buffer = str()
 
         # Label Frames
         self.lf_add_item = tk.LabelFrame(master, text="ADD NEW ITEM")
@@ -220,7 +221,17 @@ class Frontend:
         cal.pack(fill="both", expand=True)
         ttk.Button(top, text="ok", command=print_sel).pack()
 
+    def QueryExecute(self):
+        print("In development")
+
+
     def AddItem(self):
+        """During validation of entries ->
+            add_name should contain chaaracters not exceeding ??
+            category should contain chaaracters not exceeding ??
+            price should be convertable to float, which value should not exceed 1000
+            barcode should be convertable to int, and should not be negative
+        """
         self.add_name = self.e_add_name.get()
         self.barcode = self.e_barcode.get()
         self.category = self.e_category.get()
@@ -228,48 +239,87 @@ class Frontend:
         print("hihi")
 
     def SupplyBatch(self):
-        print("hihi")
+        """During validation of entries ->
+            barcode should be convertable to int, and should not be negative
+            exp_date should be formatted according to calendar entry
+                (thus, it should be validated in this regard, or should not be editable at all)
+            quantity should be convertable to int, and should not be negative
+            weight should be convertable to float, and should not be negative
+                XOR - logic between variables quantity and weight
+        """
         self.barcode = self.e_supply_barcode.get()
         self.exp_date = self.e_supply_exp_date.get()
         self.quantity = self.e_supply_quantity.get()
         self.weight = self.e_supply_weight.get()
 
     def ShowAvSupply(self):
-        print("hihi")
+        """During validation of entries ->
+            barcode should be convertable to int, and should not be negative
+            exp_date should be formatted according to calendar entry
+                (thus, it should be validated in this regard, or should not be editable at all)
+            quantity should be convertable to int, and should not be negative
+            weight should be convertable to float, and should not be negative
+                XOR - logic between variables quantity and weight
+        """
         self.barcode = self.e_supply_barcode.get()
         self.exp_date = self.e_supply_exp_date.get()
         self.quantity = self.e_supply_quantity.get()
         self.weight = self.e_supply_weight.get()
 
     def ShowSoldSupply(self):
-        print("hihi")
+        """During validation of entries ->
+            barcode should be convertable to int, and should not be negative
+            exp_date should be formatted according to calendar entry
+                (thus, it should be validated in this regard, or should not be editable at all)
+            quantity should be convertable to int, and should not be negative
+            weight should be convertable to float, and should not be negative
+                XOR - logic between variables quantity and weight
+        """
         self.barcode = self.e_supply_barcode.get()
         self.exp_date = self.e_supply_exp_date.get()
         self.quantity = self.e_supply_quantity.get()
         self.weight = self.e_supply_weight.get()
 
     def ShowAllSupply(self):
-        print("hihi")
+        """During validation of entries ->
+            barcode should be convertable to int, and should not be negative
+            exp_date should be formatted according to calendar entry
+                (thus, it should be validated in this regard, or should not be editable at all)
+            quantity should be convertable to int, and should not be negative
+            weight should be convertable to float, and should not be negative
+                XOR - logic between variables quantity and weight
+        """
         self.barcode = self.e_supply_barcode.get()
         self.exp_date = self.e_supply_exp_date.get()
         self.quantity = self.e_supply_quantity.get()
         self.weight = self.e_supply_weight.get()
 
     def SellItem(self):
-        print("hihi")
+        """During validation of entries ->
+            barcode should be convertable to int, and should not be negative
+            quantity should be convertable to int, and should not be negative
+            weight should be convertable to float, and should not be negative
+                XOR - logic between variables quantity and weight
+        """
         self.barcode = self.e_manage_barcode.get()
         self.weight = self.e_manage_weight.get()
         self.quantity = self.e_manage_quantity.get()
 
+
     def MoveWasted(self):
-        print("hihi")
+        """During validation of entries ->
+            barcode should be convertable to int, and should not be negative
+            quantity should be convertable to int, and should not be negative
+            weight should be convertable to float, and should not be negative
+                XOR - logic between variables quantity and weight
+        """
         self.barcode = self.e_manage_barcode.get()
         self.weight = self.e_manage_weight.get()
         self.quantity = self.e_manage_quantity.get()
 
     def OpenReport(self):
-        """To be continued - must also initialize loading a certain loaded file
-        or distinguish between valid and invalid files
+        """
+            No mechanism of overwirting existing file - maybe there is a way to check this
         """
         self.filename_load = tk.filedialog.askopenfilename(initialdir=self.filename_load, title="Open report",
                                                            filetypes= \
@@ -285,7 +335,8 @@ class Frontend:
             exception_window.pop_up_window("Należy podać scieżkę oraz nazwę pliku")
 
     def Browse(self):
-        """For entry of file name to be saved
+        """
+            No mechanism of overwirting existing file - maybe there is a way to check this
         """
         self.filename_save = tk.filedialog.asksaveasfilename(initialdir=self.filename_save, title="Zapisz jako",
                                                              filetypes= \
@@ -297,7 +348,11 @@ class Frontend:
             print("Save path: " + self.filename_save)
 
     def InsertData(self):
-        """Here the loaded data, of the data form a given quiery will be pended to the tree (table)"""
+        """Here the loaded data, of the data form a given quiery will be pended to the tree (table)
+            There might be an issue with empty records - pandas dataframes usually perceive them as nans,
+             but we will see how it will go.
+        """
+
         for i in self.tree.get_children():  # This is how it should be reset
             self.tree.delete(i)
         # Based on the dataframe (from pandas), following records should be inserted into the table
