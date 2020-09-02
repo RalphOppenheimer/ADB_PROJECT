@@ -174,6 +174,8 @@ class Frontend:
         self.b_prod_low_date.grid(row=0, column=8, sticky=tk.W)
         self.b_prod_hi_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_2)
         self.b_prod_hi_date.grid(row=1, column=8, sticky=tk.W)
+        self.b_prod_exp_date = tk.Button(self.lf_supply_batch, text='...', command=self.cal_init_3)
+        self.b_prod_exp_date.grid(row=1, column=5, sticky=tk.W)
         # Save button
         self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18)
         self.button_save.grid(row=2, column=2, columnspan=2, sticky=tk.E)
@@ -187,9 +189,6 @@ class Frontend:
         self.b_button_load.grid(row=1, column=3, sticky=tk.W)
 
         # Calendar entries
-        # self.cal = DateEntry(root_3, width=12, background='darkblue', date_pattern='yyyy-mm-dd',
-        #                      foreground='white', borderwidth=2)
-        # self.cal.pack(side=tk.LEFT, expand=True)
 
     def cal_init_1(self):
         top = tk.Tk()
@@ -221,11 +220,29 @@ class Frontend:
         cal.pack(fill="both", expand=True)
         ttk.Button(top, text="ok", command=print_sel).pack()
 
+
+    def cal_init_3(self):
+        """Used for inserting an expiration date for batch supply"""
+        top = tk.Tk()
+
+        def print_sel():
+            print(cal.selection_get())
+            self.e_supply_exp_date.delete(0, tk.END)
+            self.e_supply_exp_date.insert(0, str(cal.selection_get()))
+            top.destroy()
+
+        cal = Calendar(top,
+                       font="Arial 14", selectmode='day',
+                       cursor="hand1", year=2020, month=9, day=1)
+        cal.pack(fill="both", expand=True)
+        ttk.Button(top, text="ok", command=print_sel).pack()
+
     def QueryExecute(self):
         print("In development")
 
 
     def AddItem(self):
+        # ALL BUFFERS should be initially RESET
         """During validation of entries ->
             add_name should contain chaaracters not exceeding ??
             category should contain chaaracters not exceeding ??
@@ -239,6 +256,7 @@ class Frontend:
         print("hihi")
 
     def SupplyBatch(self):
+        # ALL BUFFERS should be initially RESET
         """During validation of entries ->
             barcode should be convertable to int, and should not be negative
             exp_date should be formatted according to calendar entry
@@ -253,48 +271,67 @@ class Frontend:
         self.weight = self.e_supply_weight.get()
 
     def ShowAvSupply(self):
+        # ALL BUFFERS should be initially RESET
         """During validation of entries ->
-            barcode should be convertable to int, and should not be negative
-            exp_date should be formatted according to calendar entry
+            prod_name should contain chaaracters not exceeding ??
+            prod_category should contain chaaracters not exceeding ??
+            e_prod_low_date should be formatted according to calendar entry
                 (thus, it should be validated in this regard, or should not be editable at all)
-            quantity should be convertable to int, and should not be negative
-            weight should be convertable to float, and should not be negative
-                XOR - logic between variables quantity and weight
+            e_prod_hi_date should be formatted according to calendar entry
+                (thus, it should be validated in this regard, or should not be editable at all)
+            The Hi date must be larger than low date
+
+            If only category is specified, the function should used any name
+            We assume, that adding a category and name at the same time is pointless,
+            so in that case, we take only name into account
         """
-        self.barcode = self.e_supply_barcode.get()
-        self.exp_date = self.e_supply_exp_date.get()
-        self.quantity = self.e_supply_quantity.get()
-        self.weight = self.e_supply_weight.get()
+        self.lo_date = self.e_prod_low_date.get()
+        self.hi_date = self.e_prod_hi_date.get()
+        self.category = self.e_prod_category.get()
+        self.add_name = self.e_prod_name.get()
 
     def ShowSoldSupply(self):
+        # ALL BUFFERS should be initially RESET
         """During validation of entries ->
-            barcode should be convertable to int, and should not be negative
-            exp_date should be formatted according to calendar entry
+            prod_name should contain chaaracters not exceeding ??
+            prod_category should contain chaaracters not exceeding ??
+            e_prod_low_date should be formatted according to calendar entry
                 (thus, it should be validated in this regard, or should not be editable at all)
-            quantity should be convertable to int, and should not be negative
-            weight should be convertable to float, and should not be negative
-                XOR - logic between variables quantity and weight
+            e_prod_hi_date should be formatted according to calendar entry
+                (thus, it should be validated in this regard, or should not be editable at all)
+            The Hi date must be larger than low date
+
+            If only category is specified, the function should used any name
+            We assume, that adding a category and name at the same time is pointless,
+            so in that case, we take only name into account
         """
-        self.barcode = self.e_supply_barcode.get()
-        self.exp_date = self.e_supply_exp_date.get()
-        self.quantity = self.e_supply_quantity.get()
-        self.weight = self.e_supply_weight.get()
+        self.lo_date = self.e_prod_low_date.get()
+        self.hi_date = self.e_prod_hi_date.get()
+        self.category = self.e_prod_category.get()
+        self.add_name = self.e_prod_name.get()
 
     def ShowAllSupply(self):
+        # ALL BUFFERS should be initially RESET
         """During validation of entries ->
-            barcode should be convertable to int, and should not be negative
-            exp_date should be formatted according to calendar entry
+            prod_name should contain chaaracters not exceeding ??
+            prod_category should contain chaaracters not exceeding ??
+            e_prod_low_date should be formatted according to calendar entry
                 (thus, it should be validated in this regard, or should not be editable at all)
-            quantity should be convertable to int, and should not be negative
-            weight should be convertable to float, and should not be negative
-                XOR - logic between variables quantity and weight
+            e_prod_hi_date should be formatted according to calendar entry
+                (thus, it should be validated in this regard, or should not be editable at all)
+            The Hi date must be larger than low date
+
+            If only category is specified, the function should used any name
+            We assume, that adding a category and name at the same time is pointless,
+            so in that case, we take only name into account
         """
-        self.barcode = self.e_supply_barcode.get()
-        self.exp_date = self.e_supply_exp_date.get()
-        self.quantity = self.e_supply_quantity.get()
-        self.weight = self.e_supply_weight.get()
+        self.lo_date = self.e_prod_low_date.get()
+        self.hi_date = self.e_prod_hi_date.get()
+        self.category = self.e_prod_category.get()
+        self.add_name = self.e_prod_name.get()
 
     def SellItem(self):
+        # ALL BUFFERS should be initially RESET
         """During validation of entries ->
             barcode should be convertable to int, and should not be negative
             quantity should be convertable to int, and should not be negative
