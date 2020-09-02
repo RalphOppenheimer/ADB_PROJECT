@@ -1,25 +1,21 @@
 from tkinter import ttk
 import tkinter as tk
-from tkcalendar import Calendar, DateEntry #This as well
+from tkinter import filedialog
+from tkcalendar import Calendar, DateEntry  # This as well
+import sys  # Creating a new browse path
+import os  # Obtaiing existing path
+import Backend as bk
+import exception_window
+import pandas as pd
 
-def cal_init_1():
-    def print_sel():
-        print(cal.selection_get())
 
-    top = tk.Toplevel(root)
-
-    cal = Calendar(top,
-                   font="Arial 14", selectmode='day',
-                   cursor="hand1", year=2018, month=2, day=5)
-    cal.pack(fill="both", expand=True)
-    ttk.Button(top, text="ok", command=print_sel).pack()
 
 class Frontend:
     def __init__(self, master):
         self.master = master
         master.title("Database Food Management")
         master.geometry("1145x630")
-        master.resizable(width=False, height=False) #Disables changing dimensions of a window
+        master.resizable(width=False, height=False)  # Disables changing dimensions of a window
 
         self.button_historical_data = tk.Button(master, text="Dane historyczne")
         # command=show_hist_window(read_json_data)
@@ -27,17 +23,44 @@ class Frontend:
         # is called from the same class it belongs to.
         self.button_historical_data.place(x=380, y=550)
 
+        self.filename_save = os.path.dirname(os.path.realpath(sys.argv[0])) + "\\"  # Program default path
+        self.filename_load = os.path.dirname(os.path.realpath(sys.argv[0])) + "\\"
+        self.filename_save = self.filename_save.replace("\\", "/")
+        self.filename_load = self.filename_load.replace("\\", "/")
+        # You can modify default save/load folder name here:
+        self.filename_save = self.filename_save + "_measurements" + "/"
+        self.filename_load = self.filename_load + "_measurements" + "/"
+        # And insert it into the report field
+
+        # Buffers used for validating entry values
+        self.add_name = str()
+        self.barcode = str()
+        self.category = str()
+        self.price = str()
+        self.weight = str()
+        self.quantity = str()
+        self.hi_date = str()
+        self.lo_date = str()
+        self.exp_date = str()
+
+        # Buffers used during operation
+        self.data_records_buffer = pd.DataFrame
+
         # Label Frames
         self.lf_add_item = tk.LabelFrame(master, text="ADD NEW ITEM")
         self.lf_add_item.grid(row=0, column=0, columnspan=3, rowspan=6, sticky='NW', padx=1, pady=1, ipadx=1, ipady=1)
         self.lf_supply_batch = tk.LabelFrame(master, text="SUPPLY BATCH")
-        self.lf_supply_batch.grid(row=0, column=3, columnspan=3, rowspan=6, sticky='NW', padx=1, pady=1, ipadx=1, ipady=1)
+        self.lf_supply_batch.grid(row=0, column=3, columnspan=3, rowspan=6, sticky='NW', padx=1, pady=1, ipadx=1,
+                                  ipady=1)
         self.lf_product_management = tk.LabelFrame(master, text="PRODUCT MANAGEMENT")
-        self.lf_product_management.grid(row=0, column=7, columnspan=3, rowspan=6, sticky='NW', padx=1, pady=1, ipadx=1, ipady=1)
+        self.lf_product_management.grid(row=0, column=7, columnspan=3, rowspan=6, sticky='NW', padx=1, pady=1, ipadx=1,
+                                        ipady=1)
         self.lf_manage_supply = tk.LabelFrame(master, text="MANAGE SUPPLY")
-        self.lf_manage_supply.grid(row=7, column=0, columnspan=6, rowspan=6, sticky='NW', padx=1, pady=1, ipadx=1, ipady=1)
-        self.lf_report_generation= tk.LabelFrame(master, text="GENERATING REPORT")
-        self.lf_report_generation.grid(row=7, column=9, columnspan=3, rowspan=6, sticky='NE', padx=1, pady=1, ipadx=1, ipady=1)
+        self.lf_manage_supply.grid(row=7, column=0, columnspan=6, rowspan=6, sticky='NW', padx=1, pady=1, ipadx=1,
+                                   ipady=1)
+        self.lf_report_generation = tk.LabelFrame(master, text="GENERATING REPORT")
+        self.lf_report_generation.grid(row=7, column=9, columnspan=3, rowspan=6, sticky='NE', padx=1, pady=1, ipadx=1,
+                                       ipady=1)
 
         # Scrollbar and table view
         self.tree = ttk.Treeview(master, selectmode='browse')
@@ -62,7 +85,8 @@ class Frontend:
         self.tree.column("6", width=150, anchor='c')
         self.tree.column("7", width=100, anchor='c')
         self.tree.column("8", width=100, anchor='c')
-        self.tree.insert("",'end',text="L1",values=("Big1","Best", "Ahjo1"))
+        self.tree.insert("", 'end', text="L1",
+                         values=("Big1", "Best", "Ahjo1", "21-37-2137", "420.69", "Wasted", "123", "42"))
 
         # Labels for naming:
         self.l_add_name = tk.Label(self.lf_add_item, text='Name: ')
@@ -83,7 +107,7 @@ class Frontend:
         self.l_supply_weight.grid(row=3, column=3, sticky=tk.NW)
         self.l_prod_low_date = tk.Label(self.lf_product_management, text='Lower date: ')
         self.l_prod_low_date.grid(row=0, column=3, sticky=tk.NW)
-        self.l_prod_high_date= tk.Label(self.lf_product_management, text='Upper date: ')
+        self.l_prod_high_date = tk.Label(self.lf_product_management, text='Upper date: ')
         self.l_prod_high_date.grid(row=1, column=3, sticky=tk.NW)
         self.l_prod_category = tk.Label(self.lf_product_management, text='Category: ')
         self.l_prod_category.grid(row=2, column=3, sticky=tk.NW)
@@ -168,6 +192,7 @@ class Frontend:
 
     def cal_init_1(self):
         top = tk.Tk()
+
         def print_sel():
             print(cal.selection_get())
             self.e_prod_low_date.delete(0, tk.END)
@@ -182,6 +207,7 @@ class Frontend:
 
     def cal_init_2(self):
         top = tk.Tk()
+
         def print_sel():
             print(cal.selection_get())
             self.e_prod_hi_date.delete(0, tk.END)
@@ -194,14 +220,98 @@ class Frontend:
         cal.pack(fill="both", expand=True)
         ttk.Button(top, text="ok", command=print_sel).pack()
 
+    def AddItem(self):
+        self.add_name = self.e_add_name.get()
+        self.barcode = self.e_barcode.get()
+        self.category = self.e_category.get()
+        self.price = self.e_price.get()
+        print("hihi")
+
+    def SupplyBatch(self):
+        print("hihi")
+        self.barcode = self.e_supply_barcode.get()
+        self.exp_date = self.e_supply_exp_date.get()
+        self.quantity = self.e_supply_quantity.get()
+        self.weight = self.e_supply_weight.get()
+
+    def ShowAvSupply(self):
+        print("hihi")
+        self.barcode = self.e_supply_barcode.get()
+        self.exp_date = self.e_supply_exp_date.get()
+        self.quantity = self.e_supply_quantity.get()
+        self.weight = self.e_supply_weight.get()
+
+    def ShowSoldSupply(self):
+        print("hihi")
+        self.barcode = self.e_supply_barcode.get()
+        self.exp_date = self.e_supply_exp_date.get()
+        self.quantity = self.e_supply_quantity.get()
+        self.weight = self.e_supply_weight.get()
+
+    def ShowAllSupply(self):
+        print("hihi")
+        self.barcode = self.e_supply_barcode.get()
+        self.exp_date = self.e_supply_exp_date.get()
+        self.quantity = self.e_supply_quantity.get()
+        self.weight = self.e_supply_weight.get()
+
+    def SellItem(self):
+        print("hihi")
+        self.barcode = self.e_manage_barcode.get()
+        self.weight = self.e_manage_weight.get()
+        self.quantity = self.e_manage_quantity.get()
+
+    def MoveWasted(self):
+        print("hihi")
+        self.barcode = self.e_manage_barcode.get()
+        self.weight = self.e_manage_weight.get()
+        self.quantity = self.e_manage_quantity.get()
+
+    def OpenReport(self):
+        """To be continued - must also initialize loading a certain loaded file
+        or distinguish between valid and invalid files
+        """
+        self.filename_load = tk.filedialog.askopenfilename(initialdir=self.filename_load, title="Open report",
+                                                           filetypes= \
+                                                               (("csv files", "*.csv"), ("all files", "*.*")))
+        if self.filename_load[-1] == '/':
+            exception_window.pop_up_window("Nie wybrano pliku!", "Wczytaj plik")
+        print("Load path: " + self.filename_load)
+        # else:
+        #     self.filename_load = self.filename_load + '.csv'
+        if (self.filename_load[-3:] == 'csv'):
+            print("Go on")
+        else:
+            exception_window.pop_up_window("Należy podać scieżkę oraz nazwę pliku")
+
+    def Browse(self):
+        """For entry of file name to be saved
+        """
+        self.filename_save = tk.filedialog.asksaveasfilename(initialdir=self.filename_save, title="Zapisz jako",
+                                                             filetypes= \
+                                                                 (("csv files", "*.csv"), ("all files", "*.*")))
+        if (self.filename_save[-3:] == 'csv'):
+            print("Save path: " + self.filename_save)
+        else:
+            self.filename_save = self.filename_save + '.csv'
+            print("Save path: " + self.filename_save)
+
+    def InsertData(self):
+        """Here the loaded data, of the data form a given quiery will be pended to the tree (table)"""
+        for i in self.tree.get_children():  # This is how it should be reset
+            self.tree.delete(i)
+        # Based on the dataframe (from pandas), following records should be inserted into the table
+        self.tree.insert("", 'end', text="L1",
+                         values=("Big1", "Best", "Ahjo1", "21-37-2137", "420.69", "Wasted", "123", "42"))
+
 
 if __name__ == "__main__":
     root = tk.Tk()  # must be running, when adding an image.
     # ---------Reading json file in a loop
 
     my_gui = Frontend(root)
-    #my_gui.combobox_choice(root)
-    #my_gui.building_chosen(root)
-    #my_gui.refresh_labels()
+    # my_gui.combobox_choice(root)
+    # my_gui.building_chosen(root)
+    # my_gui.refresh_labels()
 
     root.mainloop()
