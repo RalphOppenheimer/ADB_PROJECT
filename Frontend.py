@@ -156,25 +156,19 @@ class Frontend:
         self.e_report_path.grid(row=1, column=1, sticky=tk.E)
 
         # Other Buttons
-        self.b_add_item = tk.Button(self.lf_add_item, text="Add item", width=10, command=lambda: self.AddItem())
+        self.b_add_item = tk.Button(self.lf_add_item, text="Add item", width=10, command=self.AddItem)
         self.b_add_item.grid(row=3, column=1, sticky=tk.NE)
-        self.b_add_batch = tk.Button(self.lf_supply_batch, text="Add batch", width=10,
-                                     command=lambda: self.SupplyBatch())
+        self.b_add_batch = tk.Button(self.lf_supply_batch, text="Add batch", width=10, command=self.SupplyBatch)
         self.b_add_batch.grid(row=3, column=4, sticky=tk.NE)
-        self.b_sh_all_sup = tk.Button(self.lf_product_management, text="Show all supply", width=13,
-                                      command=lambda: self.ShowAllSupply())
+        self.b_sh_all_sup = tk.Button(self.lf_product_management, text="Show all supply", width=13, command=self.ShowAllSupply)
         self.b_sh_all_sup.grid(row=2, column=9, sticky=tk.NE)
-        self.b_sh_sold_sup = tk.Button(self.lf_product_management, text="Show sold supply", width=15,
-                                       command=lambda: self.ShowSoldSupply())
+        self.b_sh_sold_sup = tk.Button(self.lf_product_management, text="Show sold supply", width=15, command=self.ShowSoldSupply)
         self.b_sh_sold_sup.grid(row=1, column=9, sticky=tk.NE)
-        self.b_sh_aval_sup = tk.Button(self.lf_product_management, text="Show avaliable supply", width=18,
-                                       command=lambda: self.ShowAvSupply())
+        self.b_sh_aval_sup = tk.Button(self.lf_product_management, text="Show avaliable supply", width=18, command=self.ShowAvSupply)
         self.b_sh_aval_sup.grid(row=0, column=9, sticky=tk.NE)
-        self.b_sell_mng = tk.Button(self.lf_manage_supply, text="Sell item(s)", width=15,
-                                    command=lambda: self.SellItem())
+        self.b_sell_mng = tk.Button(self.lf_manage_supply, text="Sell item(s)", width=15, command=self.SellItem)
         self.b_sell_mng.grid(row=2, column=0, columnspan=2, sticky=tk.NW)
-        self.b_wasted_mng = tk.Button(self.lf_manage_supply, text="Classify as wasted", width=18,
-                                      command=lambda: self.MoveWasted())
+        self.b_wasted_mng = tk.Button(self.lf_manage_supply, text="Classify as wasted", width=18, command=self.MoveWasted)
         self.b_wasted_mng.grid(row=2, column=4, columnspan=2, sticky=tk.E)
         self.b_prod_low_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_1)
         self.b_prod_low_date.grid(row=0, column=8, sticky=tk.W)  # Lower date choice
@@ -183,18 +177,15 @@ class Frontend:
         self.b_prod_exp_date = tk.Button(self.lf_supply_batch, text='...', command=self.cal_init_3)
         self.b_prod_exp_date.grid(row=1, column=5, sticky=tk.W)  # Expiration date choice
         # Save button
-        self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18,
-                                     command=lambda: self.AddItem())
+        self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18, command=self.AddItem) # FIXME
         self.button_save.grid(row=2, column=2, columnspan=2, sticky=tk.E)
 
         # Open button
-        self.button_open = tk.Button(self.lf_report_generation, text="Open csv report", width=18,
-                                     command=lambda: self.AddItem())
+        self.button_open = tk.Button(self.lf_report_generation, text="Open csv report", width=18, command=self.OpenReport)
         self.button_open.grid(row=2, column=1, sticky=tk.W)
 
         # Browse button
-        self.b_button_load = tk.Button(self.lf_report_generation, text="Browse...", width=12,
-                                       command=lambda: self.AddItem())
+        self.b_button_load = tk.Button(self.lf_report_generation, text="Browse...", width=12, command=self.Browse)
         self.b_button_load.grid(row=1, column=3, sticky=tk.W)
 
         # Calendar entries
@@ -303,14 +294,17 @@ class Frontend:
                     exception_window.pop_up_window(
                         "The batch expiration date cannot be exceeded with respect to current date!",
                         "SUPPLY BATCH EXCEPTION")
-            if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
-                exception_window.pop_up_window(
-                    "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
-                    "SUPPLY BATCH EXCEPTION")
-            else:
-                print("Carry on")
+            except:
+                exception_window.pop_up_window("Invalid format of expiration date!","SUPPLY BATCH EXCEPTION")
+                if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
+                    exception_window.pop_up_window(
+                "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
+                "SUPPLY BATCH EXCEPTION")
+                else:
+                    print("Carry on")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "SUPPLY BATCH EXCEPTION")
+
 
     def ShowAvSupply(self):
         # ALL BUFFERS should be initially RESET
@@ -341,6 +335,7 @@ class Frontend:
                 exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION")
         except:
             exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
+
 
     def ShowSoldSupply(self):
         # ALL BUFFERS should be initially RESET
@@ -391,11 +386,11 @@ class Frontend:
             if self.hi_date > self.lo_date:
                 print("Carry on")
             else:
-                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
-                                               "PRODUCT MANAGEMENT EXCEPTION")
+                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION", "PRODUCT MANAGEMENT EXCEPTION")
         except:
-            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION",
-                                           "PRODUCT MANAGEMENT EXCEPTION")
+            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION", "PRODUCT MANAGEMENT EXCEPTION")
+
+
 
     def SellItem(self):
         # ALL BUFFERS should be initially RESET
@@ -430,6 +425,7 @@ class Frontend:
         else:
             print("Carry on")
 
+
     def MoveWasted(self):
         """During validation of entries ->
             barcode should be convertable to int, and should not be negative
@@ -462,6 +458,7 @@ class Frontend:
         else:
             print("Carry on")
 
+
     def OpenReport(self):
         """
             No mechanism of overwirting existing file - maybe there is a way to check this
@@ -469,15 +466,19 @@ class Frontend:
         self.filename_load = tk.filedialog.askopenfilename(initialdir=self.filename_load, title="Open report",
                                                            filetypes= \
                                                                (("csv files", "*.csv"), ("all files", "*.*")))
-        if self.filename_load[-1] == '/':
-            exception_window.pop_up_window("Nie wybrano pliku!", "Wczytaj plik")
-        print("Load path: " + self.filename_load)
-        # else:
-        #     self.filename_load = self.filename_load + '.csv'
-        if (self.filename_load[-3:] == 'csv'):
-            print("Go on")
-        else:
-            exception_window.pop_up_window("Należy podać scieżkę oraz nazwę pliku")
+        try:
+            if self.filename_load[-1] == '/':
+                exception_window.pop_up_window("Nie wybrano pliku!", "Wczytaj plik")
+            print("Load path: " + self.filename_load)
+            # else:
+            #     self.filename_load = self.filename_load + '.csv'
+            if (self.filename_load[-3:] == 'csv'):
+                print("Go on")
+            else:
+                exception_window.pop_up_window("Należy podać scieżkę oraz nazwę pliku")
+        except IndexError:
+            print("OpenReport: FYI - open path to file wasn't specified!")
+
 
     def Browse(self):
         """
@@ -486,11 +487,14 @@ class Frontend:
         self.filename_save = tk.filedialog.asksaveasfilename(initialdir=self.filename_save, title="Zapisz jako",
                                                              filetypes= \
                                                                  (("csv files", "*.csv"), ("all files", "*.*")))
-        if (self.filename_save[-3:] == 'csv'):
+        if self.filename_save[-3:] == 'csv':
             print("Save path: " + self.filename_save)
+        elif len(self.filename_save) < 3:
+            print("Browse: FYI - open path to file wasn't specified!")
         else:
             self.filename_save = self.filename_save + '.csv'
             print("Save path: " + self.filename_save)
+
 
     def InsertData(self):
         """Here the loaded data, of the data form a given quiery will be pended to the tree (table)
