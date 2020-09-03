@@ -7,6 +7,7 @@ import os  # Obtaiing existing path
 import Backend as bk
 import exception_window
 import pandas as pd
+from datetime import datetime
 
 
 class Frontend:
@@ -176,11 +177,11 @@ class Frontend:
                                       command=lambda: self.MoveWasted())
         self.b_wasted_mng.grid(row=2, column=4, columnspan=2, sticky=tk.E)
         self.b_prod_low_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_1)
-        self.b_prod_low_date.grid(row=0, column=8, sticky=tk.W)
+        self.b_prod_low_date.grid(row=0, column=8, sticky=tk.W)  # Lower date choice
         self.b_prod_hi_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_2)
-        self.b_prod_hi_date.grid(row=1, column=8, sticky=tk.W)
+        self.b_prod_hi_date.grid(row=1, column=8, sticky=tk.W)  # Higher date choice
         self.b_prod_exp_date = tk.Button(self.lf_supply_batch, text='...', command=self.cal_init_3)
-        self.b_prod_exp_date.grid(row=1, column=5, sticky=tk.W)
+        self.b_prod_exp_date.grid(row=1, column=5, sticky=tk.W)  # Expiration date choice
         # Save button
         self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18,
                                      command=lambda: self.AddItem())
@@ -202,10 +203,11 @@ class Frontend:
         top = tk.Tk()
 
         def print_sel():
-            print(cal.selection_get())
+            self.lo_date = cal.selection_get()
             self.e_prod_low_date.delete(0, tk.END)
-            self.e_prod_low_date.insert(0, str(cal.selection_get()))
+            self.e_prod_low_date.insert(0, str(self.lo_date))
             top.destroy()
+            type(self.lo_date)
 
         cal = Calendar(top,
                        font="Arial 14", selectmode='day',
@@ -217,9 +219,9 @@ class Frontend:
         top = tk.Tk()
 
         def print_sel():
-            print(cal.selection_get())
+            self.hi_date = cal.selection_get()
             self.e_prod_hi_date.delete(0, tk.END)
-            self.e_prod_hi_date.insert(0, str(cal.selection_get()))
+            self.e_prod_hi_date.insert(0, str(self.hi_date))
             top.destroy()
 
         cal = Calendar(top,
@@ -233,9 +235,9 @@ class Frontend:
         top = tk.Tk()
 
         def print_sel():
-            print(cal.selection_get())
+            self.exp_date = cal.selection_get()
             self.e_supply_exp_date.delete(0, tk.END)
-            self.e_supply_exp_date.insert(0, str(cal.selection_get()))
+            self.e_supply_exp_date.insert(0, str(self.exp_date))
             top.destroy()
 
         cal = Calendar(top,
@@ -259,7 +261,17 @@ class Frontend:
         self.barcode = self.e_barcode.get()
         self.category = self.e_category.get()
         self.price = self.e_price.get()
-        print("hihi")
+        if self.barcode.isdecimal():
+            try:
+                self.price = float(self.price)
+                if self.price <= 0:
+                    exception_window.pop_up_window("Weight value must be positive!",
+                                                   "ADD NEW ITEM EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+                                               "ADD NEW ITEM EXCEPTION")
+        else:
+            exception_window.pop_up_window("Use only digits in Barcode entry!", "ADD NEW ITEM EXCEPTION")
 
     def SupplyBatch(self):
         # ALL BUFFERS should be initially RESET
@@ -272,9 +284,33 @@ class Frontend:
                 XOR - logic between variables quantity and weight
         """
         self.barcode = self.e_supply_barcode.get()
-        self.exp_date = self.e_supply_exp_date.get()
+        # self.exp_date
         self.quantity = self.e_supply_quantity.get()
         self.weight = self.e_supply_weight.get()
+        if self.barcode.isdecimal():
+            if self.quantity.isdecimal():
+                exception_window.pop_up_window("Quantity must be a numerical value!", "SUPPLY BATCH EXCEPTION")
+            try:
+                self.weight = float(self.weight)
+                if self.weight <= 0:
+                    exception_window.pop_up_window("Weight value must be positive!",
+                                                   "SUPPLY BATCH EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+                                               "SUPPLY BATCH EXCEPTION")
+            try:
+                if self.exp_date < datetime.today():
+                    exception_window.pop_up_window(
+                        "The batch expiration date cannot be exceeded with respect to current date!",
+                        "SUPPLY BATCH EXCEPTION")
+            if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
+                exception_window.pop_up_window(
+                    "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
+                    "SUPPLY BATCH EXCEPTION")
+            else:
+                print("Carry on")
+        else:
+            exception_window.pop_up_window("Use only digits in Barcode entry!", "SUPPLY BATCH EXCEPTION")
 
     def ShowAvSupply(self):
         # ALL BUFFERS should be initially RESET
@@ -291,10 +327,20 @@ class Frontend:
             We assume, that adding a category and name at the same time is pointless,
             so in that case, we take only name into account
         """
-        self.lo_date = self.e_prod_low_date.get()
-        self.hi_date = self.e_prod_hi_date.get()
-        self.category = self.e_prod_category.get()
-        self.add_name = self.e_prod_name.get()
+        try:
+            if self.hi_date > self.lo_date:
+                self.category = self.e_prod_category.get()
+                self.add_name = self.e_prod_name.get()
+                if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
+                        self.add_name) > 0:
+                    print("Carry on")
+                else:
+                    exception_window.pop_up_window("Only Category or only Name can be inserted!",
+                                                   "PRODUCT MANAGEMENT EXCEPTION")
+            else:
+                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION")
+        except:
+            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
 
     def ShowSoldSupply(self):
         # ALL BUFFERS should be initially RESET
@@ -311,10 +357,20 @@ class Frontend:
             We assume, that adding a category and name at the same time is pointless,
             so in that case, we take only name into account
         """
-        self.lo_date = self.e_prod_low_date.get()
-        self.hi_date = self.e_prod_hi_date.get()
-        self.category = self.e_prod_category.get()
-        self.add_name = self.e_prod_name.get()
+        try:
+            if self.hi_date > self.lo_date:
+                self.category = self.e_prod_category.get()
+                self.add_name = self.e_prod_name.get()
+                if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
+                        self.add_name) > 0:
+                    print("Carry on")
+                else:
+                    exception_window.pop_up_window("Only Category or only Name can be inserted!",
+                                                   "PRODUCT MANAGEMENT EXCEPTION")
+            else:
+                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION")
+        except:
+            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
 
     def ShowAllSupply(self):
         # ALL BUFFERS should be initially RESET
@@ -331,10 +387,15 @@ class Frontend:
             We assume, that adding a category and name at the same time is pointless,
             so in that case, we take only name into account
         """
-        self.lo_date = self.e_prod_low_date.get()
-        self.hi_date = self.e_prod_hi_date.get()
-        self.category = self.e_prod_category.get()
-        self.add_name = self.e_prod_name.get()
+        try:
+            if self.hi_date > self.lo_date:
+                print("Carry on")
+            else:
+                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
+                                               "PRODUCT MANAGEMENT EXCEPTION")
+        except:
+            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION",
+                                           "PRODUCT MANAGEMENT EXCEPTION")
 
     def SellItem(self):
         # ALL BUFFERS should be initially RESET
@@ -347,6 +408,27 @@ class Frontend:
         self.barcode = self.e_manage_barcode.get()
         self.weight = self.e_manage_weight.get()
         self.quantity = self.e_manage_quantity.get()
+        if self.barcode.isdecimal():
+            print("Carry on")
+        else:
+            exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
+        if self.quantity.isdecimal():
+            exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
+        try:
+            self.weight = float(self.weight)
+            if self.weight <= 0:
+                exception_window.pop_up_window("Weight value must be positive!",
+                                               "MANAGE SUPPLY EXCEPTION")
+        except ValueError:
+            exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+                                           "MANAGE SUPPLY EXCEPTION")
+
+        if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
+            exception_window.pop_up_window(
+                "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
+                "MANAGE SUPPLY EXCEPTION")
+        else:
+            print("Carry on")
 
     def MoveWasted(self):
         """During validation of entries ->
@@ -358,6 +440,27 @@ class Frontend:
         self.barcode = self.e_manage_barcode.get()
         self.weight = self.e_manage_weight.get()
         self.quantity = self.e_manage_quantity.get()
+        if self.barcode.isdecimal():
+            print("Carry on")
+        else:
+            exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
+        if self.quantity.isdecimal():
+            exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
+        try:
+            self.weight = float(self.weight)
+            if self.weight <= 0:
+                exception_window.pop_up_window("Weight value must be positive!",
+                                               "MANAGE SUPPLY EXCEPTION")
+        except ValueError:
+            exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+                                           "MANAGE SUPPLY EXCEPTION")
+
+        if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
+            exception_window.pop_up_window(
+                "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
+                "MANAGE SUPPLY EXCEPTION")
+        else:
+            print("Carry on")
 
     def OpenReport(self):
         """
