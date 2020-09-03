@@ -9,7 +9,6 @@ import exception_window
 import pandas as pd
 
 
-
 class Frontend:
     def __init__(self, master):
         self.master = master
@@ -156,19 +155,25 @@ class Frontend:
         self.e_report_path.grid(row=1, column=1, sticky=tk.E)
 
         # Other Buttons
-        self.b_add_item = tk.Button(self.lf_add_item, text="Add item", width=10)
+        self.b_add_item = tk.Button(self.lf_add_item, text="Add item", width=10, command=lambda: self.AddItem())
         self.b_add_item.grid(row=3, column=1, sticky=tk.NE)
-        self.b_add_batch = tk.Button(self.lf_supply_batch, text="Add batch", width=10)
+        self.b_add_batch = tk.Button(self.lf_supply_batch, text="Add batch", width=10,
+                                     command=lambda: self.SupplyBatch())
         self.b_add_batch.grid(row=3, column=4, sticky=tk.NE)
-        self.b_sh_all_sup = tk.Button(self.lf_product_management, text="Show all supply", width=13)
+        self.b_sh_all_sup = tk.Button(self.lf_product_management, text="Show all supply", width=13,
+                                      command=lambda: self.ShowAllSupply())
         self.b_sh_all_sup.grid(row=2, column=9, sticky=tk.NE)
-        self.b_sh_sold_sup = tk.Button(self.lf_product_management, text="Show sold supply", width=15)
+        self.b_sh_sold_sup = tk.Button(self.lf_product_management, text="Show sold supply", width=15,
+                                       command=lambda: self.ShowSoldSupply())
         self.b_sh_sold_sup.grid(row=1, column=9, sticky=tk.NE)
-        self.b_sh_aval_sup = tk.Button(self.lf_product_management, text="Show avaliable supply", width=18)
+        self.b_sh_aval_sup = tk.Button(self.lf_product_management, text="Show avaliable supply", width=18,
+                                       command=lambda: self.ShowAvSupply())
         self.b_sh_aval_sup.grid(row=0, column=9, sticky=tk.NE)
-        self.b_sell_mng = tk.Button(self.lf_manage_supply, text="Sell item(s)", width=15)
+        self.b_sell_mng = tk.Button(self.lf_manage_supply, text="Sell item(s)", width=15,
+                                    command=lambda: self.SellItem())
         self.b_sell_mng.grid(row=2, column=0, columnspan=2, sticky=tk.NW)
-        self.b_wasted_mng = tk.Button(self.lf_manage_supply, text="Classify as wasted", width=18)
+        self.b_wasted_mng = tk.Button(self.lf_manage_supply, text="Classify as wasted", width=18,
+                                      command=lambda: self.MoveWasted())
         self.b_wasted_mng.grid(row=2, column=4, columnspan=2, sticky=tk.E)
         self.b_prod_low_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_1)
         self.b_prod_low_date.grid(row=0, column=8, sticky=tk.W)
@@ -177,15 +182,18 @@ class Frontend:
         self.b_prod_exp_date = tk.Button(self.lf_supply_batch, text='...', command=self.cal_init_3)
         self.b_prod_exp_date.grid(row=1, column=5, sticky=tk.W)
         # Save button
-        self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18)
+        self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18,
+                                     command=lambda: self.AddItem())
         self.button_save.grid(row=2, column=2, columnspan=2, sticky=tk.E)
 
         # Open button
-        self.button_open = tk.Button(self.lf_report_generation, text="Open csv report", width=18)
+        self.button_open = tk.Button(self.lf_report_generation, text="Open csv report", width=18,
+                                     command=lambda: self.AddItem())
         self.button_open.grid(row=2, column=1, sticky=tk.W)
 
         # Browse button
-        self.b_button_load = tk.Button(self.lf_report_generation, text="Browse...", width=12)
+        self.b_button_load = tk.Button(self.lf_report_generation, text="Browse...", width=12,
+                                       command=lambda: self.AddItem())
         self.b_button_load.grid(row=1, column=3, sticky=tk.W)
 
         # Calendar entries
@@ -220,7 +228,6 @@ class Frontend:
         cal.pack(fill="both", expand=True)
         ttk.Button(top, text="ok", command=print_sel).pack()
 
-
     def cal_init_3(self):
         """Used for inserting an expiration date for batch supply"""
         top = tk.Tk()
@@ -239,7 +246,6 @@ class Frontend:
 
     def QueryExecute(self):
         print("In development")
-
 
     def AddItem(self):
         # ALL BUFFERS should be initially RESET
@@ -341,7 +347,6 @@ class Frontend:
         self.barcode = self.e_manage_barcode.get()
         self.weight = self.e_manage_weight.get()
         self.quantity = self.e_manage_quantity.get()
-
 
     def MoveWasted(self):
         """During validation of entries ->
