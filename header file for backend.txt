@@ -1,0 +1,16 @@
+
+def add_product(self, barcode,name, category, price):
+def delete_product(self, barcode):
+def add_available(self, batch_id, product_barcode, expiration_date,quantity, weight ):
+def delete_available(self, batch_id):
+def get_supply(self, container, lower_date, upper_date, category, name):
+def get_available_supply(self, lower_date, upper_date, category, name):
+def get_sold_supply(self, lower_date, upper_date, category, name):
+def get_wasted_supply(self, lower_date, upper_date, category, name):
+def get_all_supply(self, lower_date, upper_date, category, name):
+def move_item_quantity(self, to_table, barcode, quantity):
+def move_item_weight(self, to_table, barcode, weight):
+def sell_item(self, barcode, weight, quantity):
+def classify_as_wasted(self, barcode, weight, quantity):
+
+//Brak metody dodającej dostawę (Supply batch)

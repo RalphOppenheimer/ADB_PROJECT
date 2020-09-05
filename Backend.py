@@ -1,5 +1,15 @@
 from sqlalchemy import create_engine, text
 
+#Sebastian Wach Credentials
+
+# user="postgres"
+# password="12345"
+# host="localhost"
+# db_name="shop_db2"
+# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
+
+#Rafał Kordaczek credentials:
+
 user="postgres"
 password="12345"
 host="localhost"
@@ -98,15 +108,25 @@ class Database:
         return dict_list
 
     def get_available_supply(self, lower_date, upper_date, category, name):
+
         return self.get_supply('available',lower_date, upper_date, category, name)
 
     def get_sold_supply(self, lower_date, upper_date, category, name):
+        """
+            Shows sold supplies for all tables based on the specified date constrains.
+        """
         return self.get_supply('sold',lower_date, upper_date, category, name)
 
     def get_wasted_supply(self, lower_date, upper_date, category, name):
+        """
+            Shows wasted supplies for all tables based on the specified date constrains.
+        """
         return self.get_supply('wasted',lower_date, upper_date, category, name)
 
     def get_all_supply(self, lower_date, upper_date, category, name):
+        """
+            Shows all supplies for all tables based on the specified date constrains.
+        """
         return (self.get_supply('available', lower_date, upper_date, category, name)+
             self.get_supply('sold', lower_date, upper_date, category, name) +
             self.get_supply('wasted', lower_date, upper_date, category, name))
@@ -262,4 +282,3 @@ def rowproxy_to_dict(rowproxy_list):
             dict = {**dict, **{column: value}}
         list_dict.append(dict)
     return list_dict
-
