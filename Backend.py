@@ -83,7 +83,7 @@ class Database:
         print(type(expiration_date))
         cur = create_engine(db_string)
         conn = cur.connect()
-        query= text("INSERT INTO "+state+" (batch_id,product_barcode,expiration_date,quantity,weight) VALUES(:bat,:pro,:exp,:qua,:wei)")
+        query= text("INSERT INTO "+state+" (batch_id,product_barcode,expiration_date,quantity,weight) OVERRIDING SYSTEM VALUE VALUES(:bat,:pro,:exp,:qua,:wei)")
         conn.execute(query, bat=batch_id,pro=product_barcode, exp=expiration_date, qua=quantity, wei=weight )
 
     def delete_available(self, batch_id):
