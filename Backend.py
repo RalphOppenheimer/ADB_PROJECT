@@ -1,4 +1,10 @@
 from sqlalchemy import create_engine, text
+import pandas as pd
+
+#Mikołaj Mrówka creds:
+
+db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
+
 
 #Sebastian Wach Credentials
 
@@ -10,11 +16,11 @@ from sqlalchemy import create_engine, text
 
 #Rafał Kordaczek credentials:
 
-user="postgres"
-password="12345"
-host="localhost"
-db_name="shop_db2"
-db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
+# user="postgres"
+# password="12345"
+# host="localhost"
+# db_name="shop_db2"
+# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
 
 # W TestBackend.py można sobie testować te metody bez brudzenia w innych miejscach
 
@@ -62,6 +68,22 @@ class Database:
         cur = create_engine(db_string)
         conn = cur.connect()
         query= text("INSERT INTO available (batch_id,product_barcode,expiration_date,quantity,weight) VALUES(:bat,:pro,:exp,:qua,:wei)")
+        conn.execute(query, bat=batch_id,pro=product_barcode, exp=expiration_date, qua=quantity, wei=weight )
+        
+    def import_supply(self, state, batch_id, product_barcode, expiration_date,quantity, weight ):
+        """
+        :param state:               string          
+        :param batch_id:            int
+        :param product_barcode:     string
+        :param expiration_date:     string   (in postgres date)
+        :param quantity:            int
+        :param weight:              float    (in postgres real?)
+        """
+
+        print(type(expiration_date))
+        cur = create_engine(db_string)
+        conn = cur.connect()
+        query= text("INSERT INTO "+state+" (batch_id,product_barcode,expiration_date,quantity,weight) VALUES(:bat,:pro,:exp,:qua,:wei)")
         conn.execute(query, bat=batch_id,pro=product_barcode, exp=expiration_date, qua=quantity, wei=weight )
 
     def delete_available(self, batch_id):
@@ -271,6 +293,8 @@ class Database:
         if weight and quantity:
             wasted_response = "Give me quantity or weight. Not both of them!"
         return wasted_response
+    
+
 
 
 def rowproxy_to_dict(rowproxy_list):
@@ -282,3 +306,34 @@ def rowproxy_to_dict(rowproxy_list):
             dict = {**dict, **{column: value}}
         list_dict.append(dict)
     return list_dict
+
+
+
+#csv related functions by Mrówka
+
+def import_product_csv(product_csv):
+    data_csv = pd.read_csv(product_csv)
+    modified_csv=data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
+    for index, row in modified_csv.iterrows():
+        i_barcode = row['barcode']
+        i_name = row['name']
+        i_category = row['category']
+        i_price = row['price']
+        database.add_product(i_barcode,i_name, i_category, i_price)
+
+def import_supply_csv(supply_csv):
+    data_csv = pd.read_csv(product_csv)
+    modified_csv=data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
+    for index, row in modified_csv.iterrows():
+        i_batch_id = row['batch_id']
+        i_product_barcode = row['product_barcode']
+        i_expiration_date = row['expiration_date']
+        i_quantity = row['quantity']
+        i_weight = row['weight']
+        i_type = row['type']
+        if i_type == 'A':
+            database.import_supply('avaliable', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+        elif i_type == 'S':
+            database.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+        else:
+            database.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
