@@ -1,12 +1,12 @@
 from sqlalchemy import create_engine, text
 import pandas as pd
 
-#Mikołaj Mrówka creds:
+# Mikołaj Mrówka creds:
 
 db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
 
 
-#Sebastian Wach Credentials
+# Sebastian Wach Credentials
 
 # user="postgres"
 # password="12345"
@@ -14,7 +14,7 @@ db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
 # db_name="shop_db2"
 # db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
 
-#Rafał Kordaczek credentials:
+# Rafał Kordaczek credentials:
 
 # user="postgres"
 # password="12345"
@@ -26,13 +26,11 @@ db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
 
 class Database:
 
-    def __init__(self, db): #zmiast 'def connect()''
+    def __init__(self, db):  # zmiast 'def connect()''
         cur = create_engine(db)
         conn = cur.connect()
 
-
-
-    def add_product(self, barcode,name, category, price):
+    def add_product(self, barcode, name, category, price):
         """
         :param barcode:     string
         :param name:        string
@@ -42,9 +40,8 @@ class Database:
 
         cur = create_engine(db_string)
         conn = cur.connect()
-        query= text("INSERT INTO products VALUES( :bar , :nam , :cat , :pri)")
-        conn.execute(query, bar=barcode,nam=name, cat=category, pri=price)
-
+        query = text("INSERT INTO products VALUES( :bar , :nam , :cat , :pri)")
+        conn.execute(query, bar=barcode, nam=name, cat=category, pri=price)
 
     def delete_product(self, barcode):
         """
@@ -52,10 +49,10 @@ class Database:
         """
         cur = create_engine(db_string)
         conn = cur.connect()
-        query = text ("DELETE FROM products WHERE barcode = :bar")
+        query = text("DELETE FROM products WHERE barcode = :bar")
         conn.execute(query, bar=str(barcode))
 
-    def add_available(self, batch_id, product_barcode, expiration_date,quantity, weight ):
+    def add_available(self, batch_id, product_barcode, expiration_date, quantity, weight):
         """
         :param batch_id:            int
         :param product_barcode:     string
@@ -67,10 +64,11 @@ class Database:
         print(type(expiration_date))
         cur = create_engine(db_string)
         conn = cur.connect()
-        query= text("INSERT INTO available (batch_id,product_barcode,expiration_date,quantity,weight) VALUES(:bat,:pro,:exp,:qua,:wei)")
-        conn.execute(query, bat=batch_id,pro=product_barcode, exp=expiration_date, qua=quantity, wei=weight )
-        
-    def import_supply(self, state, batch_id, product_barcode, expiration_date,quantity, weight ):
+        query = text(
+            "INSERT INTO available (batch_id,product_barcode,expiration_date,quantity,weight) VALUES(:bat,:pro,:exp,:qua,:wei)")
+        conn.execute(query, bat=batch_id, pro=product_barcode, exp=expiration_date, qua=quantity, wei=weight)
+
+    def import_supply(self, state, batch_id, product_barcode, expiration_date, quantity, weight):
         """
         :param state:               string          
         :param batch_id:            int
@@ -83,8 +81,9 @@ class Database:
         print(type(expiration_date))
         cur = create_engine(db_string)
         conn = cur.connect()
-        query= text("INSERT INTO "+state+" (batch_id,product_barcode,expiration_date,quantity,weight) OVERRIDING SYSTEM VALUE VALUES(:bat,:pro,:exp,:qua,:wei)")
-        conn.execute(query, bat=batch_id,pro=product_barcode, exp=expiration_date, qua=quantity, wei=weight )
+        query = text(
+            "INSERT INTO " + state + " (batch_id,product_barcode,expiration_date,quantity,weight) OVERRIDING SYSTEM VALUE VALUES(:bat,:pro,:exp,:qua,:wei)")
+        conn.execute(query, bat=batch_id, pro=product_barcode, exp=expiration_date, qua=quantity, wei=weight)
 
     def delete_available(self, batch_id):
         """
@@ -92,9 +91,8 @@ class Database:
         """
         cur = create_engine(db_string)
         conn = cur.connect()
-        query = text ("DELETE FROM available WHERE batch_id = :bat")
+        query = text("DELETE FROM available WHERE batch_id = :bat")
         conn.execute(query, bat=batch_id)
-
 
     def get_supply(self, container, lower_date, upper_date, category, name):
         """
@@ -114,15 +112,16 @@ class Database:
         cur = create_engine(db_string)
         conn = cur.connect()
 
-        query = text("SELECT barcode, name, category, expiration_date, price, weight, quantity FROM products, "+container+
-        " WHERE products.barcode = "+container+".product_barcode AND expiration_date BETWEEN :low_date AND  :upp_date "
-        "AND category  LIKE :cat AND name LIKE :nam")
+        query = text(
+            "SELECT barcode, name, category, expiration_date, price, weight, quantity FROM products, " + container +
+            " WHERE products.barcode = " + container + ".product_barcode AND expiration_date BETWEEN :low_date AND  :upp_date "
+                                                       "AND category  LIKE :cat AND name LIKE :nam")
 
         if not name:  # when name is empty
-            rows = conn.execute(query, low_date=lower_date, upp_date=upper_date, cat=category+'%',
+            rows = conn.execute(query, low_date=lower_date, upp_date=upper_date, cat=category + '%',
                                 nam='%').fetchall()
         else:
-            rows = conn.execute(query, low_date = lower_date, upp_date = upper_date, cat ='%', nam = name+ '%').fetchall()
+            rows = conn.execute(query, low_date=lower_date, upp_date=upper_date, cat='%', nam=name + '%').fetchall()
 
         dict_list = rowproxy_to_dict(rows)
         for x in dict_list:
@@ -131,28 +130,27 @@ class Database:
 
     def get_available_supply(self, lower_date, upper_date, category, name):
 
-        return self.get_supply('available',lower_date, upper_date, category, name)
+        return self.get_supply('available', lower_date, upper_date, category, name)
 
     def get_sold_supply(self, lower_date, upper_date, category, name):
         """
             Shows sold supplies for all tables based on the specified date constrains.
         """
-        return self.get_supply('sold',lower_date, upper_date, category, name)
+        return self.get_supply('sold', lower_date, upper_date, category, name)
 
     def get_wasted_supply(self, lower_date, upper_date, category, name):
         """
             Shows wasted supplies for all tables based on the specified date constrains.
         """
-        return self.get_supply('wasted',lower_date, upper_date, category, name)
+        return self.get_supply('wasted', lower_date, upper_date, category, name)
 
     def get_all_supply(self, lower_date, upper_date, category, name):
         """
             Shows all supplies for all tables based on the specified date constrains.
         """
-        return (self.get_supply('available', lower_date, upper_date, category, name)+
-            self.get_supply('sold', lower_date, upper_date, category, name) +
-            self.get_supply('wasted', lower_date, upper_date, category, name))
-
+        return (self.get_supply('available', lower_date, upper_date, category, name) +
+                self.get_supply('sold', lower_date, upper_date, category, name) +
+                self.get_supply('wasted', lower_date, upper_date, category, name))
 
     def move_item_quantity(self, to_table, barcode, quantity):
 
@@ -169,38 +167,38 @@ class Database:
 
         while quantity_to_substract > 0:
 
-            query = text ("SELECT batch_id FROM available WHERE product_barcode= :bar AND quantity > 0 ORDER BY expiration_date ASC")
-            batch_id = conn.execute(query, bar = barcode).fetchmany(size=1)
+            query = text(
+                "SELECT batch_id FROM available WHERE product_barcode= :bar AND quantity > 0 ORDER BY expiration_date ASC")
+            batch_id = conn.execute(query, bar=barcode).fetchmany(size=1)
             if not batch_id:
                 return "There are less available products than you want! But I moved  everything what is available."
             else:
                 batch_id = batch_id[0]["batch_id"]
             query = text("SELECT quantity FROM available WHERE batch_id = :bat ORDER BY expiration_date ASC")
-            quantity_in_oldest_product = conn.execute(query, bat = batch_id).fetchmany(size=1)
+            quantity_in_oldest_product = conn.execute(query, bat=batch_id).fetchmany(size=1)
             quantity_in_oldest_product = quantity_in_oldest_product[0]["quantity"]
 
             if quantity_to_substract < quantity_in_oldest_product:
-                query = text("INSERT INTO "+to_table+ " (product_barcode,expiration_date,quantity,weight)"
-                            " SELECT product_barcode,expiration_date,:qua,weight "
-                            " FROM available "
-                            " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
-                conn.execute(query, bat=str(batch_id), qua= quantity_to_substract)
+                query = text("INSERT INTO " + to_table + " (product_barcode,expiration_date,quantity,weight)"
+                                                         " SELECT product_barcode,expiration_date,:qua,weight "
+                                                         " FROM available "
+                                                         " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
+                conn.execute(query, bat=str(batch_id), qua=quantity_to_substract)
 
                 query = text("UPDATE available SET quantity = quantity - :qua WHERE batch_id = :bat")
-                conn.execute(query, qua = quantity_to_substract, bat=batch_id)
+                conn.execute(query, qua=quantity_to_substract, bat=batch_id)
                 quantity_to_substract = 0
 
             else:
-                query = text("INSERT INTO "+to_table+" (product_barcode,expiration_date,quantity,weight)"
-                            " SELECT product_barcode,expiration_date,:qua,weight "
-                            " FROM available "
-                            " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
-                conn.execute(query, bat=str(batch_id), qua= quantity_in_oldest_product, dest =to_table)
-
+                query = text("INSERT INTO " + to_table + " (product_barcode,expiration_date,quantity,weight)"
+                                                         " SELECT product_barcode,expiration_date,:qua,weight "
+                                                         " FROM available "
+                                                         " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
+                conn.execute(query, bat=str(batch_id), qua=quantity_in_oldest_product, dest=to_table)
 
                 query = text("UPDATE available SET quantity = quantity - :qua WHERE batch_id = :bat")
-                conn.execute(query, qua = quantity_in_oldest_product, bat=batch_id)
-                quantity_to_substract=quantity_to_substract - quantity_in_oldest_product
+                conn.execute(query, qua=quantity_in_oldest_product, bat=batch_id)
+                quantity_to_substract = quantity_to_substract - quantity_in_oldest_product
 
         return "Successful operation!"
 
@@ -219,37 +217,37 @@ class Database:
 
         while weight_to_substract > 0:
 
-            query = text ("SELECT batch_id FROM available WHERE product_barcode= :bar AND weight > 0 ORDER BY expiration_date ASC")
-            batch_id = conn.execute(query, bar = barcode).fetchmany(size=1)
+            query = text(
+                "SELECT batch_id FROM available WHERE product_barcode= :bar AND weight > 0 ORDER BY expiration_date ASC")
+            batch_id = conn.execute(query, bar=barcode).fetchmany(size=1)
             if not batch_id:
                 return "There are less available products than you want! But I moved  everything what is available."
             else:
                 batch_id = batch_id[0]["batch_id"]
             query = text("SELECT weight FROM available WHERE batch_id = :bat ORDER BY expiration_date ASC")
-            weight_in_oldest_product = conn.execute(query, bat = batch_id).fetchmany(size=1)
+            weight_in_oldest_product = conn.execute(query, bat=batch_id).fetchmany(size=1)
             weight_in_oldest_product = weight_in_oldest_product[0]["weight"]
 
             if weight_to_substract < weight_in_oldest_product:
-                query = text("INSERT INTO "+to_table+" (product_barcode,expiration_date,quantity,weight)"
-                            " SELECT product_barcode,expiration_date,quantity,:wei "
-                            " FROM available "
-                            " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
-                conn.execute(query, bat=str(batch_id), wei= weight_to_substract)
+                query = text("INSERT INTO " + to_table + " (product_barcode,expiration_date,quantity,weight)"
+                                                         " SELECT product_barcode,expiration_date,quantity,:wei "
+                                                         " FROM available "
+                                                         " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
+                conn.execute(query, bat=str(batch_id), wei=weight_to_substract)
 
                 query = text("UPDATE available SET weight = weight - :wei WHERE batch_id = :bat")
-                conn.execute(query, wei = weight_to_substract, bat=batch_id)
+                conn.execute(query, wei=weight_to_substract, bat=batch_id)
                 weight_to_substract = 0
 
             else:
-                query = text("INSERT INTO "+ to_table+" (product_barcode,expiration_date,quantity,weight)"
-                            " SELECT product_barcode,expiration_date,quantity,:wei "
-                            " FROM available "
-                            " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
-                conn.execute(query, bat=str(batch_id), wei= weight_in_oldest_product)
-
+                query = text("INSERT INTO " + to_table + " (product_barcode,expiration_date,quantity,weight)"
+                                                         " SELECT product_barcode,expiration_date,quantity,:wei "
+                                                         " FROM available "
+                                                         " WHERE batch_id=:bat ORDER BY expiration_date ASC  LIMIT 1")
+                conn.execute(query, bat=str(batch_id), wei=weight_in_oldest_product)
 
                 query = text("UPDATE available SET weight = weight - :wei WHERE batch_id = :bat")
-                conn.execute(query, wei= weight_in_oldest_product, bat=batch_id)
+                conn.execute(query, wei=weight_in_oldest_product, bat=batch_id)
                 weight_to_substract = weight_to_substract - weight_in_oldest_product
 
         return "Successful operation!"
@@ -263,13 +261,13 @@ class Database:
         :return:            string ( response from operation)
         """
 
-        sell_response=""
+        sell_response = ""
         if not weight and not quantity:
             sell_response = "Give me quantity or weight to sell this product"
         if weight and not quantity:
-            sell_response = self.move_item_weight('sold',barcode,weight)
+            sell_response = self.move_item_weight('sold', barcode, weight)
         if not weight and quantity:
-            sell_response = self.move_item_quantity('sold',barcode,quantity)
+            sell_response = self.move_item_quantity('sold', barcode, quantity)
         if weight and quantity:
             sell_response = "Give me quantity or weight. Not both of them!"
         return sell_response
@@ -283,18 +281,16 @@ class Database:
         :return:            string ( response from operation)
         """
 
-        wasted_response=""
+        wasted_response = ""
         if not weight and not quantity:
             wasted_response = "Give me quantity or weight to classify this product as wasted"
         if weight and not quantity:
-            wasted_response = self.move_item_weight('wasted',barcode,weight)
+            wasted_response = self.move_item_weight('wasted', barcode, weight)
         if not weight and quantity:
-            wasted_response = self.move_item_quantity('wasted',barcode,quantity)
+            wasted_response = self.move_item_quantity('wasted', barcode, quantity)
         if weight and quantity:
             wasted_response = "Give me quantity or weight. Not both of them!"
         return wasted_response
-    
-
 
 
 def rowproxy_to_dict(rowproxy_list):
@@ -308,22 +304,22 @@ def rowproxy_to_dict(rowproxy_list):
     return list_dict
 
 
-
-#csv related functions by Mrówka
+# csv related functions by Mrówka
 
 def import_product_csv(product_csv):
     data_csv = pd.read_csv(product_csv)
-    modified_csv=data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
+    modified_csv = data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
     for index, row in modified_csv.iterrows():
         i_barcode = row['barcode']
         i_name = row['name']
         i_category = row['category']
         i_price = row['price']
-        database.add_product(i_barcode,i_name, i_category, i_price)
+        database.add_product(i_barcode, i_name, i_category, i_price)
+
 
 def import_supply_csv(supply_csv):
     data_csv = pd.read_csv(product_csv)
-    modified_csv=data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
+    modified_csv = data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
     for index, row in modified_csv.iterrows():
         i_batch_id = row['batch_id']
         i_product_barcode = row['product_barcode']
@@ -332,8 +328,8 @@ def import_supply_csv(supply_csv):
         i_weight = row['weight']
         i_type = row['type']
         if i_type == 'A':
-            database.import_supply('avaliable', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+            database.import_supply('avaliable', i_batch_id, i_product_barcode, i_expiration_date, i_quantity, i_weight)
         elif i_type == 'S':
-            database.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+            database.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date, i_quantity, i_weight)
         else:
-            database.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+            database.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date, i_quantity, i_weight)

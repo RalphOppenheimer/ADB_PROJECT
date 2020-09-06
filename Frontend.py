@@ -8,11 +8,21 @@ import Backend as bk
 import exception_window
 import pandas as pd
 from datetime import datetime
+import random
+from Backend import Database  # Import obiektu (klasy) Database z pliku database
+from sqlalchemy import inspect
+
+user = "postgres"
+password = "12345"
+host = "localhost"
+db_name = "shop_db2"
+db_string = "postgresql://" + user + ":" + password + "@" + host + "/" + db_name
 
 
 class Frontend:
     def __init__(self, master):
         self.master = master
+        self.DatabaseBackend = bk.Database(db_string)  # FIXME: dodaj baze danych jako argument
         master.title("Database Food Management")
         master.geometry("1145x630")
         master.resizable(width=False, height=False)  # Disables changing dimensions of a window
@@ -160,15 +170,19 @@ class Frontend:
         self.b_add_item.grid(row=3, column=1, sticky=tk.NE)
         self.b_add_batch = tk.Button(self.lf_supply_batch, text="Add batch", width=10, command=self.SupplyBatch)
         self.b_add_batch.grid(row=3, column=4, sticky=tk.NE)
-        self.b_sh_all_sup = tk.Button(self.lf_product_management, text="Show all supply", width=13, command=self.ShowAllSupply)
+        self.b_sh_all_sup = tk.Button(self.lf_product_management, text="Show all supply", width=13,
+                                      command=self.ShowAllSupply)
         self.b_sh_all_sup.grid(row=2, column=9, sticky=tk.NE)
-        self.b_sh_sold_sup = tk.Button(self.lf_product_management, text="Show sold supply", width=15, command=self.ShowSoldSupply)
+        self.b_sh_sold_sup = tk.Button(self.lf_product_management, text="Show sold supply", width=15,
+                                       command=self.ShowSoldSupply)
         self.b_sh_sold_sup.grid(row=1, column=9, sticky=tk.NE)
-        self.b_sh_aval_sup = tk.Button(self.lf_product_management, text="Show avaliable supply", width=18, command=self.ShowAvSupply)
+        self.b_sh_aval_sup = tk.Button(self.lf_product_management, text="Show avaliable supply", width=18,
+                                       command=self.ShowAvSupply)
         self.b_sh_aval_sup.grid(row=0, column=9, sticky=tk.NE)
         self.b_sell_mng = tk.Button(self.lf_manage_supply, text="Sell item(s)", width=15, command=self.SellItem)
         self.b_sell_mng.grid(row=2, column=0, columnspan=2, sticky=tk.NW)
-        self.b_wasted_mng = tk.Button(self.lf_manage_supply, text="Classify as wasted", width=18, command=self.MoveWasted)
+        self.b_wasted_mng = tk.Button(self.lf_manage_supply, text="Classify as wasted", width=18,
+                                      command=self.MoveWasted)
         self.b_wasted_mng.grid(row=2, column=4, columnspan=2, sticky=tk.E)
         self.b_prod_low_date = tk.Button(self.lf_product_management, text='...', command=self.cal_init_1)
         self.b_prod_low_date.grid(row=0, column=8, sticky=tk.W)  # Lower date choice
@@ -177,11 +191,13 @@ class Frontend:
         self.b_prod_exp_date = tk.Button(self.lf_supply_batch, text='...', command=self.cal_init_3)
         self.b_prod_exp_date.grid(row=1, column=5, sticky=tk.W)  # Expiration date choice
         # Save button
-        self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18, command=self.AddItem) # FIXME
+        self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18,
+                                     command=self.AddItem)  # FIXME
         self.button_save.grid(row=2, column=2, columnspan=2, sticky=tk.E)
 
         # Open button
-        self.button_open = tk.Button(self.lf_report_generation, text="Open csv report", width=18, command=self.OpenReport)
+        self.button_open = tk.Button(self.lf_report_generation, text="Open csv report", width=18,
+                                     command=self.OpenReport)
         self.button_open.grid(row=2, column=1, sticky=tk.W)
 
         # Browse button
@@ -263,9 +279,14 @@ class Frontend:
                                                "ADD NEW ITEM EXCEPTION")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "ADD NEW ITEM EXCEPTION")
+        # Execute Backend command
+        self.DatabaseBackend.add_product(self.barcode, self.add_name, self.category, self.price)
 
     def SupplyBatch(self):
         # ALL BUFFERS should be initially RESET
+        self.barcode = ""
+        self.quantity = ""
+        self.weight = ""
         """During validation of entries ->
             barcode should be convertable to int, and should not be negative
             exp_date should be formatted according to calendar entry
@@ -295,16 +316,17 @@ class Frontend:
                         "The batch expiration date cannot be exceeded with respect to current date!",
                         "SUPPLY BATCH EXCEPTION")
             except:
-                exception_window.pop_up_window("Invalid format of expiration date!","SUPPLY BATCH EXCEPTION")
+                exception_window.pop_up_window("Invalid format of expiration date!", "SUPPLY BATCH EXCEPTION")
                 if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
                     exception_window.pop_up_window(
-                "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
-                "SUPPLY BATCH EXCEPTION")
+                        "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
+                        "SUPPLY BATCH EXCEPTION")
                 else:
                     print("Carry on")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "SUPPLY BATCH EXCEPTION")
-
+        # Execute Backend command
+        self.DatabaseBackend.add_available(random.randint(1, 10000000), self.barcode, self.exp_date, self.quantity, self.weight)
 
     def ShowAvSupply(self):
         # ALL BUFFERS should be initially RESET
@@ -327,6 +349,7 @@ class Frontend:
                 self.add_name = self.e_prod_name.get()
                 if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
                         self.add_name) > 0:
+                    self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category, self.add_name)
                     print("Carry on")
                 else:
                     exception_window.pop_up_window("Only Category or only Name can be inserted!",
@@ -335,7 +358,6 @@ class Frontend:
                 exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION")
         except:
             exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
-
 
     def ShowSoldSupply(self):
         # ALL BUFFERS should be initially RESET
@@ -386,11 +408,11 @@ class Frontend:
             if self.hi_date > self.lo_date:
                 print("Carry on")
             else:
-                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION", "PRODUCT MANAGEMENT EXCEPTION")
+                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
+                                               "PRODUCT MANAGEMENT EXCEPTION")
         except:
-            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION", "PRODUCT MANAGEMENT EXCEPTION")
-
-
+            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION",
+                                           "PRODUCT MANAGEMENT EXCEPTION")
 
     def SellItem(self):
         # ALL BUFFERS should be initially RESET
@@ -425,7 +447,6 @@ class Frontend:
         else:
             print("Carry on")
 
-
     def MoveWasted(self):
         """During validation of entries ->
             barcode should be convertable to int, and should not be negative
@@ -458,7 +479,6 @@ class Frontend:
         else:
             print("Carry on")
 
-
     def OpenReport(self):
         """
             No mechanism of overwirting existing file - maybe there is a way to check this
@@ -479,7 +499,6 @@ class Frontend:
         except IndexError:
             print("OpenReport: FYI - open path to file wasn't specified!")
 
-
     def Browse(self):
         """
             No mechanism of overwirting existing file - maybe there is a way to check this
@@ -494,7 +513,6 @@ class Frontend:
         else:
             self.filename_save = self.filename_save + '.csv'
             print("Save path: " + self.filename_save)
-
 
     def InsertData(self):
         """Here the loaded data, of the data form a given quiery will be pended to the tree (table)

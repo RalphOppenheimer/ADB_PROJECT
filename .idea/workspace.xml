@@ -36,9 +36,10 @@
       <screen x="62" y="0" width="1474" height="864" />
     </state>
     <state x="580" y="187" key="FileChooserDialogImpl/62.0.1474.864@62.0.1474.864" timestamp="1599204146585" />
-    <state x="252" y="-805" key="SettingsEditor" timestamp="1599080599536">
-      <screen x="62" y="-900" width="1378" height="900" />
+    <state x="265" y="91" key="SettingsEditor" timestamp="1599267492970">
+      <screen x="62" y="0" width="1474" height="864" />
     </state>
+    <state x="265" y="91" key="SettingsEditor/62.0.1474.864/0.-900.1440.900@62.0.1474.864" timestamp="1599267492970" />
     <state x="252" y="-805" key="SettingsEditor/62.0.1474.864/62.-900.1378.900@62.-900.1378.900" timestamp="1599080599536" />
   </component>
   <component name="XDebuggerManager">
