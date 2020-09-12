@@ -114,7 +114,7 @@ class Database:
         cur = create_engine(db_string)
         conn = cur.connect()
 
-        query = text("SELECT barcode, name, category, expiration_date, price, weight, quantity FROM products, "+container+
+        query = text("SELECT batch_id, barcode, name, category, expiration_date, price, weight, quantity FROM products, "+container+
         " WHERE products.barcode = "+container+".product_barcode AND expiration_date BETWEEN :low_date AND  :upp_date "
         "AND category  LIKE :cat AND name LIKE :nam")
 
@@ -337,3 +337,14 @@ def import_supply_csv(supply_csv):
             database.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
         else:
             database.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+
+def export_database_contents_csv(supply_filename,product_filename):          
+    database_contents=database.get_all_supply("1970-02-02","2038-01-18","","")
+    product_export_DF=pd.DataFrame.from_dict(database_contents)
+    supply_export_DF=pd.DataFrame.from_dict(database_contents)
+    product_export_DF=product_export_DF.drop(['batch_id', 'expiration_date', 'weight', 'quantity', 'status'], axis=1)
+    supply_export_DF=supply_export_DF.drop(['name', 'category', 'price'], axis=1)
+    supply_export_DF=supply_export_DF.rename(columns={"barcode":"product_barcode", "status":"type"});
+    supply_export_DF=supply_export_DF[["type","batch_id","product_barcode","expiration_date","quantity","weight"]];
+    supply_export_DF.to_csv(supply_filename+".csv",index=False);
+    product_export_DF.to_csv(product_filename+".csv",index=False);
