@@ -2,15 +2,23 @@ from tkinter import *
 #import Backend
 from Backend import Database # Import obiektu (klasy) Database z pliku database
 from sqlalchemy import inspect
+from sqlalchemy import create_engine
+import psycopg2
+
+# Rafał Kordaczek credentials:
+db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
 
 
+# user="postgres"
+# password="12345"
+# host="localhost"
+# db_name="shop_db2"
+# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
+cur = create_engine(db_string)
+conn = cur.connect()
+print("cel osiągnięty i chuj")
+#database=Database(db_string)
 
-user="postgres"
-password="12345"
-host="localhost"
-db_name="shop_db2"
-db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
-database=Database(db_string)
 
 # database.delete_product(6)
 # database.add_product(4,'Chia', 'seeds', 2.50)
@@ -38,9 +46,3 @@ database=Database(db_string)
 
 # wasted_response = database.classify_as_wasted('3',0,1)
 # print (wasted_response)
-
-
-
-
-
-

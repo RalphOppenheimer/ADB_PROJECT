@@ -3,7 +3,7 @@ import pandas as pd
 
 # Mikołaj Mrówka creds:
 
-db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
+#db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
 
 
 # Sebastian Wach Credentials
@@ -16,11 +16,7 @@ db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
 
 # Rafał Kordaczek credentials:
 
-# user="postgres"
-# password="12345"
-# host="localhost"
-# db_name="shop_db2"
-# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
+db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
 
 # W TestBackend.py można sobie testować te metody bez brudzenia w innych miejscach
 
@@ -70,7 +66,7 @@ class Database:
 
     def import_supply(self, state, batch_id, product_barcode, expiration_date, quantity, weight):
         """
-        :param state:               string          
+        :param state:               string
         :param batch_id:            int
         :param product_barcode:     string
         :param expiration_date:     string   (in postgres date)
@@ -113,7 +109,7 @@ class Database:
         conn = cur.connect()
 
         query = text(
-            "SELECT barcode, name, category, expiration_date, price, weight, quantity FROM products, " + container +
+            "SELECT batch_id, barcode, name, category, expiration_date, price, weight, quantity FROM products, " + container +
             " WHERE products.barcode = " + container + ".product_barcode AND expiration_date BETWEEN :low_date AND  :upp_date "
                                                        "AND category  LIKE :cat AND name LIKE :nam")
 

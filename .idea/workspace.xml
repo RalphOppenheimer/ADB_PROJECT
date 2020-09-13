@@ -32,15 +32,25 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="580" y="187" key="FileChooserDialogImpl" timestamp="1599204146585">
+    <state x="580" y="187" key="FileChooserDialogImpl" timestamp="1599546359119">
       <screen x="62" y="0" width="1474" height="864" />
     </state>
-    <state x="580" y="187" key="FileChooserDialogImpl/62.0.1474.864@62.0.1474.864" timestamp="1599204146585" />
-    <state x="265" y="91" key="SettingsEditor" timestamp="1599267492970">
+    <state x="580" y="187" key="FileChooserDialogImpl/62.0.1474.864@62.0.1474.864" timestamp="1599546359119" />
+    <state x="265" y="91" key="SettingsEditor" timestamp="1599772077418">
       <screen x="62" y="0" width="1474" height="864" />
     </state>
     <state x="265" y="91" key="SettingsEditor/62.0.1474.864/0.-900.1440.900@62.0.1474.864" timestamp="1599267492970" />
     <state x="252" y="-805" key="SettingsEditor/62.0.1474.864/62.-900.1378.900@62.-900.1378.900" timestamp="1599080599536" />
+    <state x="265" y="91" key="SettingsEditor/62.0.1474.864/62.-900.1378.900@62.0.1474.864" timestamp="1599772077418" />
+    <state width="498" height="446" key="SwitcherDM" timestamp="1599772441781">
+      <screen x="62" y="0" width="1474" height="864" />
+    </state>
+    <state width="498" height="446" key="SwitcherDM/62.0.1474.864/62.-900.1378.900@62.0.1474.864" timestamp="1599772441781" />
+    <state x="477" y="-930" width="655" height="851" maximized="true" key="dock-window-1" timestamp="1600024269331">
+      <screen x="62" y="-900" width="1378" height="900" />
+    </state>
+    <state x="469" y="-900" width="612" height="886" maximized="true" key="dock-window-1/62.0.1474.864/62.-900.1378.900@62.-900.1378.900" timestamp="1599497877156" />
+    <state x="477" y="-930" width="655" height="851" maximized="true" key="dock-window-1/62.0.1474.864/62.-900.1378.900@62.0.1474.864" timestamp="1600024269331" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

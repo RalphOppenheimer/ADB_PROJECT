@@ -7,16 +7,27 @@ import os  # Obtaiing existing path
 import Backend as bk
 import exception_window
 import pandas as pd
-from datetime import datetime
+from datetime import date
 import random
+import psycopg2
 from Backend import Database  # Import obiektu (klasy) Database z pliku database
 from sqlalchemy import inspect
 
-user = "postgres"
-password = "12345"
-host = "localhost"
-db_name = "shop_db2"
-db_string = "postgresql://" + user + ":" + password + "@" + host + "/" + db_name
+# Mikołaj Mrówka creds:
+
+# db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
+
+# Sebastian Wach Credentials
+
+# user="postgres"
+# password="12345"
+# host="localhost"
+# db_name="shop_db2"
+# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
+
+# Rafał Kordaczek credentials:
+
+db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
 
 
 class Frontend:
@@ -54,7 +65,7 @@ class Frontend:
         self.exp_date = str()
 
         # Buffers used during operation
-        self.data_records_buffer = pd.DataFrame
+        self.data_records_buffer = pd.DataFrame([])
         self.query_buffer = str()
 
         # Label Frames
@@ -263,6 +274,8 @@ class Frontend:
             category should contain chaaracters not exceeding ??
             price should be convertable to float, which value should not exceed 1000
             barcode should be convertable to int, and should not be negative
+
+            psycopg2.errors.UniqueViolation - Exception for adding the same thing twice.
         """
         self.add_name = self.e_add_name.get()
         self.barcode = self.e_barcode.get()
@@ -274,19 +287,22 @@ class Frontend:
                 if self.price <= 0:
                     exception_window.pop_up_window("Weight value must be positive!",
                                                    "ADD NEW ITEM EXCEPTION")
+                else:
+                    print("Carry on")
+                    # Execute Backend command
+                    try:
+                        self.DatabaseBackend.add_product(self.barcode, self.add_name, self.category, self.price)
+                    except:
+                        exception_window.pop_up_window("The specified product has been already added!",
+                                                       "ADD ITEM EXCEPTION")
             except ValueError:
                 exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
                                                "ADD NEW ITEM EXCEPTION")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "ADD NEW ITEM EXCEPTION")
-        # Execute Backend command
-        self.DatabaseBackend.add_product(self.barcode, self.add_name, self.category, self.price)
 
     def SupplyBatch(self):
         # ALL BUFFERS should be initially RESET
-        self.barcode = ""
-        self.quantity = ""
-        self.weight = ""
         """During validation of entries ->
             barcode should be convertable to int, and should not be negative
             exp_date should be formatted according to calendar entry
@@ -299,37 +315,53 @@ class Frontend:
         # self.exp_date
         self.quantity = self.e_supply_quantity.get()
         self.weight = self.e_supply_weight.get()
+        is_query_executable = 0
         if self.barcode.isdecimal():
-            if self.quantity.isdecimal():
-                exception_window.pop_up_window("Quantity must be a numerical value!", "SUPPLY BATCH EXCEPTION")
-            try:
-                self.weight = float(self.weight)
-                if self.weight <= 0:
-                    exception_window.pop_up_window("Weight value must be positive!",
-                                                   "SUPPLY BATCH EXCEPTION")
-            except ValueError:
-                exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
-                                               "SUPPLY BATCH EXCEPTION")
-            try:
-                if self.exp_date < datetime.today():
-                    exception_window.pop_up_window(
-                        "The batch expiration date cannot be exceeded with respect to current date!",
-                        "SUPPLY BATCH EXCEPTION")
-            except:
-                exception_window.pop_up_window("Invalid format of expiration date!", "SUPPLY BATCH EXCEPTION")
-                if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
-                    exception_window.pop_up_window(
-                        "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
-                        "SUPPLY BATCH EXCEPTION")
+            if len(self.quantity) > 0 or len(self.weight) > 0:
+                if len(self.quantity) > 0 and len(self.weight) == 0:
+                    try:
+                        self.quantity = int(self.quantity)
+                        if self.quantity > 0:
+                            is_query_executable = 1
+                            self.weight = 0
+                        else:
+                            exception_window.pop_up_window("Quantity value is not numeric", "SUPPLY BATCH EXCEPTION")
+                    except ValueError:
+                        exception_window.pop_up_window("Quantity value is not numeric", "SUPPLY BATCH EXCEPTION")
+                elif len(self.quantity) == 0 and len(self.weight) > 0:
+                    try:
+                        self.weight = int(self.weight)
+                        if self.weight > 0:
+                            is_query_executable = 1
+                            self.quantity = 0
+                        else:
+                            exception_window.pop_up_window("Weight value is not numeric",
+                                                           "SUPPLY BATCH EXCEPTION")
+                    except ValueError:
+                        exception_window.pop_up_window("Weight value is not numeric", "SUPPLY BATCH EXCEPTION")
+                if self.exp_date > date.today():
+                    if is_query_executable == 1:
+                        self.DatabaseBackend.import_supply('available', random.randint(1, 10000000), self.barcode,
+                                                           str(self.exp_date), self.quantity, self.weight)
+                    else:
+                        exception_window.pop_up_window("The query is not allowed to execute", "SUPPLY BATCH EXCEPTION")
                 else:
-                    print("Carry on")
+                    exception_window.pop_up_window("Invalid expiration date", "SUPPLY BATCH EXCEPTION")
+            else:  # The are no data entered
+                exception_window.pop_up_window("No data entered", "SUPPLY BATCH EXCEPTION")
+            # Quantity and Weight specified, not float
+            # Quantity specified, Weight not, not float
+            # Weight specified, Quantity not, not float
+            # Nothing specified,
+            # Quantity and Weight specified, float
+            # Quantity specified, Weight not, float
+            # Weight specified, Quantity not, float
         else:
-            exception_window.pop_up_window("Use only digits in Barcode entry!", "SUPPLY BATCH EXCEPTION")
-        # Execute Backend command
-        self.DatabaseBackend.add_available(random.randint(1, 10000000), self.barcode, self.exp_date, self.quantity, self.weight)
+            exception_window.pop_up_window("Barcode should be decimal!", "SUPPLY BATCH EXCEPTION")
 
     def ShowAvSupply(self):
         # ALL BUFFERS should be initially RESET
+        self.data_records_buffer = pd.DataFrame([])
         """During validation of entries ->
             prod_name should contain chaaracters not exceeding ??
             prod_category should contain chaaracters not exceeding ??
@@ -349,8 +381,11 @@ class Frontend:
                 self.add_name = self.e_prod_name.get()
                 if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
                         self.add_name) > 0:
-                    self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category, self.add_name)
-                    print("Carry on")
+                    print("ShowAvSupply: GOOD!")
+                    self.data_records_buffer = pd.from_dict(
+                        self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
+                                                                  self.add_name))
+                    print(self.data_records_buffer)
                 else:
                     exception_window.pop_up_window("Only Category or only Name can be inserted!",
                                                    "PRODUCT MANAGEMENT EXCEPTION")
@@ -361,6 +396,7 @@ class Frontend:
 
     def ShowSoldSupply(self):
         # ALL BUFFERS should be initially RESET
+        self.data_records_buffer = pd.DataFrame([])
         """During validation of entries ->
             prod_name should contain chaaracters not exceeding ??
             prod_category should contain chaaracters not exceeding ??
@@ -381,6 +417,10 @@ class Frontend:
                 if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
                         self.add_name) > 0:
                     print("Carry on")
+                    self.data_records_buffer = self.DatabaseBackend.get_sold_supply(self.lo_date, self.hi_date,
+                                                                                    self.category, self.add_name)
+                    self.InsertData()
+                    print(self.data_records_buffer)
                 else:
                     exception_window.pop_up_window("Only Category or only Name can be inserted!",
                                                    "PRODUCT MANAGEMENT EXCEPTION")
@@ -404,15 +444,21 @@ class Frontend:
             We assume, that adding a category and name at the same time is pointless,
             so in that case, we take only name into account
         """
+        print("ShowAllSupply: lo_Date" + str(self.lo_date) + "hi_date: " + str(self.hi_date))
+        print(str(self.hi_date) > str(self.lo_date))
         try:
-            if self.hi_date > self.lo_date:
-                print("Carry on")
+            if str(self.hi_date) > str(self.lo_date):
+                print("ShowAllSupply: GOOD!")
+                self.data_records_buffer = self.DatabaseBackend.get_all_supply(self.lo_date, self.hi_date,
+                                                                               self.category, self.add_name)
+                print("ShowAllSupply: VERY GOOD!")
+                print(self.data_records_buffer)
+                self.InsertData()
             else:
                 exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
                                                "PRODUCT MANAGEMENT EXCEPTION")
         except:
-            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION",
-                                           "PRODUCT MANAGEMENT EXCEPTION")
+            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
 
     def SellItem(self):
         # ALL BUFFERS should be initially RESET
@@ -446,6 +492,7 @@ class Frontend:
                 "MANAGE SUPPLY EXCEPTION")
         else:
             print("Carry on")
+            self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
 
     def MoveWasted(self):
         """During validation of entries ->
@@ -478,6 +525,7 @@ class Frontend:
                 "MANAGE SUPPLY EXCEPTION")
         else:
             print("Carry on")
+            self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
 
     def OpenReport(self):
         """
@@ -523,8 +571,12 @@ class Frontend:
         for i in self.tree.get_children():  # This is how it should be reset
             self.tree.delete(i)
         # Based on the dataframe (from pandas), following records should be inserted into the table
-        self.tree.insert("", 'end', text="L1",
-                         values=("Big1", "Best", "Ahjo1", "21-37-2137", "420.69", "Wasted", "123", "42"))
+        for j in range(len(self.data_records_buffer)):  # This is how it should be reset
+            self.tree.insert("", 'end', text="L1", values=(
+                self.data_records_buffer[j]['barcode'], self.data_records_buffer[j]['name'],
+                self.data_records_buffer[j]['category'], self.data_records_buffer[j]['expiration_date'],
+                self.data_records_buffer[j]['price'], self.data_records_buffer[j]['status'],
+                self.data_records_buffer[j]['weight'], self.data_records_buffer[j]['quantity']))
 
 
 if __name__ == "__main__":
