@@ -382,9 +382,9 @@ class Frontend:
                 if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
                         self.add_name) > 0:
                     print("ShowAvSupply: GOOD!")
-                    self.data_records_buffer = pd.from_dict(
-                        self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
-                                                                  self.add_name))
+                    self.data_records_buffer = self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
+                                                                  self.add_name)
+                    self.InsertData()
                     print(self.data_records_buffer)
                 else:
                     exception_window.pop_up_window("Only Category or only Name can be inserted!",
