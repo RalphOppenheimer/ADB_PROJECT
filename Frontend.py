@@ -19,15 +19,15 @@ from sqlalchemy import inspect
 
 # Sebastian Wach Credentials
 
-user="postgres"
-password="12345"
-host="localhost"
-db_name="shop_db2"
-db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
+# user="postgres"
+# password="12345"
+# host="localhost"
+# db_name="shop_db2"
+# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
 
 # Rafał Kordaczek credentials:
 
-# db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
+db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
 
 
 class Frontend:
@@ -446,19 +446,19 @@ class Frontend:
         """
         print("ShowAllSupply: lo_Date" + str(self.lo_date) + "hi_date: " + str(self.hi_date))
         print(str(self.hi_date) > str(self.lo_date))
-        try:
-            if str(self.hi_date) > str(self.lo_date):
-                print("ShowAllSupply: GOOD!")
-                self.data_records_buffer = self.DatabaseBackend.get_all_supply(self.lo_date, self.hi_date,
-                                                                               self.category, self.add_name)
-                print("ShowAllSupply: VERY GOOD!")
-                print(self.data_records_buffer)
-                self.InsertData()
-            else:
-                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
-                                               "PRODUCT MANAGEMENT EXCEPTION")
-        except:
-            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
+    #try:
+        if str(self.hi_date) > str(self.lo_date):
+            print("ShowAllSupply: GOOD!")
+            self.data_records_buffer = self.DatabaseBackend.get_all_supply(self.lo_date, self.hi_date,
+                                                                           self.category, self.add_name)
+            print("ShowAllSupply: VERY GOOD!")
+            print(self.data_records_buffer)
+            self.InsertData()
+        else:
+            exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
+                                           "PRODUCT MANAGEMENT EXCEPTION")
+    #except:
+        #exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
 
     def SellItem(self):
         # ALL BUFFERS should be initially RESET
@@ -477,17 +477,8 @@ class Frontend:
             print("Carry on")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
-<<<<<<< HEAD
-<<<<<<< HEAD
-        if self.quantity.isdecimal():
+        if not self.quantity.isdecimal():
             exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
-        try:
-            if float(self.weight) <= 0:
-                exception_window.pop_up_window("Weight value must be positive!",
-=======
-=======
->>>>>>> origin/integration
-
 
         if not self.quantity and self.weight:
             try:
@@ -497,8 +488,6 @@ class Frontend:
                                                    "MANAGE SUPPLY EXCEPTION")
             except ValueError:
                 exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
-<<<<<<< HEAD
->>>>>>> 8a4361b0b1bde79676bc31caec9670c79bf7ab26
                                                "MANAGE SUPPLY EXCEPTION")
             sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
             print(sell_response)
@@ -519,10 +508,6 @@ class Frontend:
             sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
             print(sell_response)
 
-=======
-                                               "MANAGE SUPPLY EXCEPTION")
-            sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
-            print(sell_response)
 
         if self.quantity and not self.weight:
 
@@ -540,7 +525,6 @@ class Frontend:
             sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
             print(sell_response)
 
->>>>>>> origin/integration
         if self.quantity and self.weight:
             exception_window.pop_up_window(
                 "Do not enter both values weight and quantity!",
@@ -567,19 +551,15 @@ class Frontend:
         if self.barcode.isdecimal():
             print("Carry on")
         else:
-            exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
-<<<<<<< HEAD
-<<<<<<< HEAD
+            exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION - Move to wasted")
         if self.quantity.isdecimal():
-            exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
+            exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION - Move to wasted")
         try:
             if float(self.weight) <= 0:
-                exception_window.pop_up_window("Weight value must be positive!",
-=======
-=======
->>>>>>> origin/integration
-
-
+                exception_window.pop_up_window("Weight value must be positive!", "MANAGE SUPPLY EXCEPTION - Move to wasted")
+        except ValueError:
+            exception_window.pop_up_window("Quantity must have a positive numerical value!",
+                                           "MANAGE SUPPLY EXCEPTION - Move to wasted")
         if not self.quantity and self.weight:
             try:
                 self.weight = float(self.weight)
@@ -588,22 +568,16 @@ class Frontend:
                                                    "MANAGE SUPPLY EXCEPTION")
             except ValueError:
                 exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
-<<<<<<< HEAD
->>>>>>> 8a4361b0b1bde79676bc31caec9670c79bf7ab26
                                                "MANAGE SUPPLY EXCEPTION")
             wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
             print(wasted_response)
 
         if self.quantity and not self.weight:
-
-=======
-                                               "MANAGE SUPPLY EXCEPTION")
             wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
             print(wasted_response)
 
         if self.quantity and not self.weight:
 
->>>>>>> origin/integration
             if not self.quantity.isdecimal():
                 exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
 

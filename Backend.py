@@ -121,6 +121,10 @@ class Database:
         if not name:  # when name is empty
             rows = conn.execute(query, low_date=lower_date, upp_date=upper_date, cat=category+'%',
                                 nam='%').fetchall()
+        elif not name and not category:
+            if not name:  # when name and category is empty
+                rows = conn.execute(query, low_date=lower_date, upp_date=upper_date, cat= '%',
+                                    nam='%').fetchall()
         else:
             rows = conn.execute(query, low_date = lower_date, upp_date = upper_date, cat ='%', nam = name+ '%').fetchall()
 
@@ -293,8 +297,48 @@ class Database:
         if weight and quantity:
             wasted_response = "Give me quantity or weight. Not both of them!"
         return wasted_response
-    
 
+    # csv related functions by Mrówka
+
+    def import_product_csv(self, product_csv):
+        data_csv = pd.read_csv(product_csv)
+        modified_csv = data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
+        for index, row in modified_csv.iterrows():
+            i_barcode = row['barcode']
+            i_name = row['name']
+            i_category = row['category']
+            i_price = row['price']
+            self.add_product(i_barcode, i_name, i_category, i_price)
+
+    def import_supply_csv(self, supply_csv):
+        data_csv = pd.read_csv(supply_csv)
+        modified_csv = data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
+        for index, row in modified_csv.iterrows():
+            i_batch_id = row['batch_id']
+            i_product_barcode = row['product_barcode']
+            i_expiration_date = row['expiration_date']
+            i_quantity = row['quantity']
+            i_weight = row['weight']
+            i_type = row['type']
+            if i_type == 'A':
+                self.import_supply('avaliable', i_batch_id, i_product_barcode, i_expiration_date, i_quantity, i_weight)
+            elif i_type == 'S':
+                self.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date, i_quantity, i_weight)
+            else:
+                self.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date, i_quantity, i_weight)
+
+    def export_database_contents_csv(self, supply_filename, product_filename):
+        database_contents = self.get_all_supply("1970-02-02", "2038-01-18", "", "")
+        product_export_DF = pd.DataFrame.from_dict(database_contents)
+        supply_export_DF = pd.DataFrame.from_dict(database_contents)
+        product_export_DF = product_export_DF.drop(['batch_id', 'expiration_date', 'weight', 'quantity', 'status'],
+                                                   axis=1)
+        supply_export_DF = supply_export_DF.drop(['name', 'category', 'price'], axis=1)
+        supply_export_DF = supply_export_DF.rename(columns={"barcode": "product_barcode", "status": "type"})
+        supply_export_DF = supply_export_DF[
+            ["type", "batch_id", "product_barcode", "expiration_date", "quantity", "weight"]]
+        supply_export_DF.to_csv(supply_filename + ".csv", index=False)
+        product_export_DF.to_csv(product_filename + ".csv", index=False)
 
 
 def rowproxy_to_dict(rowproxy_list):
@@ -306,44 +350,3 @@ def rowproxy_to_dict(rowproxy_list):
             dict = {**dict, **{column: value}}
         list_dict.append(dict)
     return list_dict
-
-
-#csv related functions by Mrówka
-
-def import_product_csv(product_csv):
-    data_csv = pd.read_csv(product_csv)
-    modified_csv=data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
-    for index, row in modified_csv.iterrows():
-        i_barcode = row['barcode']
-        i_name = row['name']
-        i_category = row['category']
-        i_price = row['price']
-        self.add_product(i_barcode,i_name, i_category, i_price)
-
-def import_supply_csv(supply_csv):
-    data_csv = pd.read_csv(supply_csv)
-    modified_csv=data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
-    for index, row in modified_csv.iterrows():
-        i_batch_id = row['batch_id']
-        i_product_barcode = row['product_barcode']
-        i_expiration_date = row['expiration_date']
-        i_quantity = row['quantity']
-        i_weight = row['weight']
-        i_type = row['type']
-        if i_type == 'A':
-            self.import_supply('avaliable', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
-        elif i_type == 'S':
-            self.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
-        else:
-            self.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
-
-def export_database_contents_csv(supply_filename,product_filename):  
-    database_contents=self.get_all_supply("1970-02-02","2038-01-18","","")
-    product_export_DF=pd.DataFrame.from_dict(database_contents)
-    supply_export_DF=pd.DataFrame.from_dict(database_contents)
-    product_export_DF=product_export_DF.drop(['batch_id', 'expiration_date', 'weight', 'quantity', 'status'], axis=1)
-    supply_export_DF=supply_export_DF.drop(['name', 'category', 'price'], axis=1)
-    supply_export_DF=supply_export_DF.rename(columns={"barcode":"product_barcode", "status":"type"})
-    supply_export_DF=supply_export_DF[["type","batch_id","product_barcode","expiration_date","quantity","weight"]]
-    supply_export_DF.to_csv(supply_filename+".csv",index=False)
-    product_export_DF.to_csv(product_filename+".csv",index=False)
