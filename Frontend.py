@@ -478,8 +478,7 @@ class Frontend:
         if self.quantity.isdecimal():
             exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
         try:
-            self.weight = float(self.weight)
-            if self.weight <= 0:
+            if float(self.weight) <= 0:
                 exception_window.pop_up_window("Weight value must be positive!",
                                                "MANAGE SUPPLY EXCEPTION")
         except ValueError:
@@ -511,8 +510,7 @@ class Frontend:
         if self.quantity.isdecimal():
             exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
         try:
-            self.weight = float(self.weight)
-            if self.weight <= 0:
+            if float(self.weight) <= 0:
                 exception_window.pop_up_window("Weight value must be positive!",
                                                "MANAGE SUPPLY EXCEPTION")
         except ValueError:
