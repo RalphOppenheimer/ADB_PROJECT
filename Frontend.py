@@ -19,15 +19,15 @@ from sqlalchemy import inspect
 
 # Sebastian Wach Credentials
 
-# user="postgres"
-# password="12345"
-# host="localhost"
-# db_name="shop_db2"
-# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
+user="postgres"
+password="12345"
+host="localhost"
+db_name="shop_db2"
+db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
 
 # Rafał Kordaczek credentials:
 
-db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
+# db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
 
 
 class Frontend:
@@ -382,9 +382,9 @@ class Frontend:
                 if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
                         self.add_name) > 0:
                     print("ShowAvSupply: GOOD!")
-                    self.data_records_buffer = pd.from_dict(
-                        self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
-                                                                  self.add_name))
+                    self.data_records_buffer = self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
+                                                                  self.add_name)
+                    self.InsertData()
                     print(self.data_records_buffer)
                 else:
                     exception_window.pop_up_window("Only Category or only Name can be inserted!",
@@ -471,27 +471,60 @@ class Frontend:
         self.barcode = self.e_manage_barcode.get()
         self.weight = self.e_manage_weight.get()
         self.quantity = self.e_manage_quantity.get()
+
+
         if self.barcode.isdecimal():
             print("Carry on")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
+<<<<<<< HEAD
         if self.quantity.isdecimal():
             exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
         try:
             if float(self.weight) <= 0:
                 exception_window.pop_up_window("Weight value must be positive!",
-                                               "MANAGE SUPPLY EXCEPTION")
-        except ValueError:
-            exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
-                                           "MANAGE SUPPLY EXCEPTION")
+=======
 
-        if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
+
+        if not self.quantity and self.weight:
+            try:
+                self.weight = float(self.weight)
+                if self.weight <= 0:
+                    exception_window.pop_up_window("Weight value must be positive!",
+                                                   "MANAGE SUPPLY EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+>>>>>>> 8a4361b0b1bde79676bc31caec9670c79bf7ab26
+                                               "MANAGE SUPPLY EXCEPTION")
+            sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
+            print(sell_response)
+
+        if self.quantity and not self.weight:
+
+            if not self.quantity.isdecimal():
+                exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
+
+            try:
+                self.quantity = int(self.quantity)
+                if self.quantity <= 0:
+                    exception_window.pop_up_window("Quantity value must be positive!",
+                                                   "MANAGE SUPPLY EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Quantity must have a positive numerical value!",
+                                               "MANAGE SUPPLY EXCEPTION")
+            sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
+            print(sell_response)
+
+        if self.quantity and self.weight:
             exception_window.pop_up_window(
-                "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
+                "Do not enter both values weight and quantity!",
                 "MANAGE SUPPLY EXCEPTION")
-        else:
-            print("Carry on")
-            self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
+        if not self.quantity and not self.weight:
+            exception_window.pop_up_window(
+                "Enter the quantity or weight of the product! Please do not enter both values!",
+                "MANAGE SUPPLY EXCEPTION")
+
+
 
     def MoveWasted(self):
         """During validation of entries ->
@@ -503,27 +536,58 @@ class Frontend:
         self.barcode = self.e_manage_barcode.get()
         self.weight = self.e_manage_weight.get()
         self.quantity = self.e_manage_quantity.get()
+
+
         if self.barcode.isdecimal():
             print("Carry on")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
+<<<<<<< HEAD
         if self.quantity.isdecimal():
             exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
         try:
             if float(self.weight) <= 0:
                 exception_window.pop_up_window("Weight value must be positive!",
-                                               "MANAGE SUPPLY EXCEPTION")
-        except ValueError:
-            exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
-                                           "MANAGE SUPPLY EXCEPTION")
+=======
 
-        if len(self.weight) > 0 and len(self.quantity) > 0 or len(self.weight) == 0 and len(self.quantity) == 0:
+
+        if not self.quantity and self.weight:
+            try:
+                self.weight = float(self.weight)
+                if self.weight <= 0:
+                    exception_window.pop_up_window("Weight value must be positive!",
+                                                   "MANAGE SUPPLY EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+>>>>>>> 8a4361b0b1bde79676bc31caec9670c79bf7ab26
+                                               "MANAGE SUPPLY EXCEPTION")
+            wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
+            print(wasted_response)
+
+        if self.quantity and not self.weight:
+
+            if not self.quantity.isdecimal():
+                exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
+
+            try:
+                self.quantity = int(self.quantity)
+                if self.quantity <= 0:
+                    exception_window.pop_up_window("Quantity value must be positive!",
+                                                   "MANAGE SUPPLY EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Quantity must have a positive numerical value!",
+                                               "MANAGE SUPPLY EXCEPTION")
+            wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
+            print(wasted_response)
+
+        if self.quantity and self.weight:
             exception_window.pop_up_window(
-                "Enter the quantity/weight of the product, and do not enter both values simultaniously!",
+                "Do not enter both values weight and quantity!",
                 "MANAGE SUPPLY EXCEPTION")
-        else:
-            print("Carry on")
-            self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
+        if not self.quantity and not self.weight:
+            exception_window.pop_up_window(
+                "Enter the quantity or weight of the product! Please do not enter both values!",
+                "MANAGE SUPPLY EXCEPTION")
 
     def OpenReport(self):
         """
