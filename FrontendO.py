@@ -203,7 +203,7 @@ class Frontend:
         self.b_prod_exp_date.grid(row=1, column=5, sticky=tk.W)  # Expiration date choice
         # Save button
         self.button_save = tk.Button(self.lf_report_generation, text="Generate csv report", width=18,
-                                     command=self.ExportCsv)
+                                     command=self.AddItem)  # FIXME
         self.button_save.grid(row=2, column=2, columnspan=2, sticky=tk.E)
 
         # Open button
@@ -382,9 +382,9 @@ class Frontend:
                 if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
                         self.add_name) > 0:
                     print("ShowAvSupply: GOOD!")
-                    self.data_records_buffer = pd.from_dict(
-                        self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
-                                                                  self.add_name))
+                    self.data_records_buffer = self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
+                                                                  self.add_name)
+                    self.InsertData()
                     print(self.data_records_buffer)
                 else:
                     exception_window.pop_up_window("Only Category or only Name can be inserted!",
@@ -446,19 +446,19 @@ class Frontend:
         """
         print("ShowAllSupply: lo_Date" + str(self.lo_date) + "hi_date: " + str(self.hi_date))
         print(str(self.hi_date) > str(self.lo_date))
-        try:
-            if str(self.hi_date) > str(self.lo_date):
-                print("ShowAllSupply: GOOD!")
-                self.data_records_buffer = self.DatabaseBackend.get_all_supply(self.lo_date, self.hi_date,
-                                                                               self.category, self.add_name)
-                print("ShowAllSupply: VERY GOOD!")
-                print(self.data_records_buffer)
-                self.InsertData()
-            else:
-                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
-                                               "PRODUCT MANAGEMENT EXCEPTION")
-        except:
-            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
+    #try:
+        if str(self.hi_date) > str(self.lo_date):
+            print("ShowAllSupply: GOOD!")
+            self.data_records_buffer = self.DatabaseBackend.get_all_supply(self.lo_date, self.hi_date,
+                                                                           self.category, self.add_name)
+            print("ShowAllSupply: VERY GOOD!")
+            print(self.data_records_buffer)
+            self.InsertData()
+        else:
+            exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION",
+                                           "PRODUCT MANAGEMENT EXCEPTION")
+    #except:
+        #exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
 
     def SellItem(self):
         # ALL BUFFERS should be initially RESET
@@ -477,7 +477,8 @@ class Frontend:
             print("Carry on")
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
-
+        if not self.quantity.isdecimal():
+            exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
 
         if not self.quantity and self.weight:
             try:
@@ -507,11 +508,28 @@ class Frontend:
             sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
             print(sell_response)
 
+
+        if self.quantity and not self.weight:
+
+            if not self.quantity.isdecimal():
+                exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
+
+            try:
+                self.quantity = int(self.quantity)
+                if self.quantity <= 0:
+                    exception_window.pop_up_window("Quantity value must be positive!",
+                                                   "MANAGE SUPPLY EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Quantity must have a positive numerical value!",
+                                               "MANAGE SUPPLY EXCEPTION")
+            sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
+            print(sell_response)
+
         if self.quantity and self.weight:
             exception_window.pop_up_window(
                 "Do not enter both values weight and quantity!",
                 "MANAGE SUPPLY EXCEPTION")
-        if not self.quantity and not self.weight:
+        if not self.quantity and self.weight:
             exception_window.pop_up_window(
                 "Enter the quantity or weight of the product! Please do not enter both values!",
                 "MANAGE SUPPLY EXCEPTION")
@@ -533,9 +551,15 @@ class Frontend:
         if self.barcode.isdecimal():
             print("Carry on")
         else:
-            exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
-
-
+            exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION - Move to wasted")
+        if self.quantity.isdecimal():
+            exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION - Move to wasted")
+        try:
+            if float(self.weight) <= 0:
+                exception_window.pop_up_window("Weight value must be positive!", "MANAGE SUPPLY EXCEPTION - Move to wasted")
+        except ValueError:
+            exception_window.pop_up_window("Quantity must have a positive numerical value!",
+                                           "MANAGE SUPPLY EXCEPTION - Move to wasted")
         if not self.quantity and self.weight:
             try:
                 self.weight = float(self.weight)
@@ -545,6 +569,10 @@ class Frontend:
             except ValueError:
                 exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
                                                "MANAGE SUPPLY EXCEPTION")
+            wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
+            print(wasted_response)
+
+        if self.quantity and not self.weight:
             wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
             print(wasted_response)
 
@@ -588,16 +616,6 @@ class Frontend:
             #     self.filename_load = self.filename_load + '.csv'
             if (self.filename_load[-3:] == 'csv'):
                 print("Go on")
-                self.data_records_buffer = pd.read_csv(self.filename_load)
-                for i in self.tree.get_children():  # This is how it should be reset
-                    self.tree.delete(i)
-                # Based on the dataframe (from pandas), following records should be inserted into the table
-                for j in range(len(self.data_records_buffer)):  # This is how it should be reset
-                    self.tree.insert("", 'end', text="L1", values=(
-                        self.data_records_buffer[j]['barcode'], self.data_records_buffer[j]['name'],
-                        self.data_records_buffer[j]['category'], self.data_records_buffer[j]['expiration_date'],
-                        self.data_records_buffer[j]['price'], self.data_records_buffer[j]['status'],
-                        self.data_records_buffer[j]['weight'], self.data_records_buffer[j]['quantity']))
 
             else:
                 exception_window.pop_up_window("Należy podać scieżkę oraz nazwę pliku")
@@ -634,28 +652,6 @@ class Frontend:
                 self.data_records_buffer[j]['category'], self.data_records_buffer[j]['expiration_date'],
                 self.data_records_buffer[j]['price'], self.data_records_buffer[j]['status'],
                 self.data_records_buffer[j]['weight'], self.data_records_buffer[j]['quantity']))
-
-    def ExportCsv(self):
-        self.filename_save = tk.filedialog.asksaveasfilename(initialdir=self.filename_save, title="Zapisz jako",
-                                                             filetypes= \
-                                                                 (("csv files", "*.csv"), ("all files", "*.*")))
-        self.filename_save = self.filename_save + 'csv'
-        len_trim = len(os.path.dirname(os.path.realpath(sys.argv[0])))
-        if len(self.filename_save) == 0:
-            exception_window.pop_up_window("The save path wasn't specified!","ExportCsv exception")
-        elif self.filename_save[-1] == '/':
-            exception_window.pop_up_window("The save path wasn't specified!", "ExportCsv exception")
-        elif self.filename_save[-3:] == 'csv':
-            print("Save path: " + self.filename_save)
-            self.e_report_path.delete(0, tk.END)
-            self.e_report_path.insert(0, self.filename_save[len_trim:])
-            self.data_records_buffer.to_csv(self.filename_save)
-            print("The data was successfully saved (?)")
-        else:
-            print("FAILURE: Save path: " +  self.filename_save)
-
-
-
 
 
 if __name__ == "__main__":

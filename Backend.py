@@ -3,7 +3,7 @@ import pandas as pd
 
 #Mikołaj Mrówka creds:
 
-db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
+#db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
 
 
 #Sebastian Wach Credentials
@@ -16,13 +16,7 @@ db_string = "postgres://postgres:Mrowka1!@localhost:5432/shop_db"
 
 #Rafał Kordaczek credentials:
 
-# user="postgres"
-# password="12345"
-# host="localhost"
-# db_name="shop_db2"
-# db_string = "postgresql://"+user+":"+password+"@"+host+"/"+db_name
-
-# W TestBackend.py można sobie testować te metody bez brudzenia w innych miejscach
+db_string = "postgresql://postgres:postgres@localhost:5432/postgres"
 
 class Database:
 
@@ -327,8 +321,8 @@ class Database:
             else:
                 self.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date, i_quantity, i_weight)
 
-    def export_database_contents_csv(self, supply_filename, product_filename):
-        database_contents = self.get_all_supply("1970-02-02", "2038-01-18", "", "")
+    def export_database_contents_csv(self, supply_filename, product_filename, database_contents):
+        #database_contents = self.get_all_supply("1970-02-02", "2038-01-18", "", "")
         product_export_DF = pd.DataFrame.from_dict(database_contents)
         supply_export_DF = pd.DataFrame.from_dict(database_contents)
         product_export_DF = product_export_DF.drop(['batch_id', 'expiration_date', 'weight', 'quantity', 'status'],
