@@ -318,10 +318,10 @@ def import_product_csv(product_csv):
         i_name = row['name']
         i_category = row['category']
         i_price = row['price']
-        database.add_product(i_barcode,i_name, i_category, i_price)
+        self.add_product(i_barcode,i_name, i_category, i_price)
 
-def import_supply_csv(product_csv):
-    data_csv = pd.read_csv(product_csv)
+def import_supply_csv(supply_csv):
+    data_csv = pd.read_csv(supply_csv)
     modified_csv=data_csv.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')
     for index, row in modified_csv.iterrows():
         i_batch_id = row['batch_id']
@@ -331,14 +331,14 @@ def import_supply_csv(product_csv):
         i_weight = row['weight']
         i_type = row['type']
         if i_type == 'A':
-            database.import_supply('avaliable', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+            self.import_supply('avaliable', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
         elif i_type == 'S':
-            database.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+            self.import_supply('sold', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
         else:
-            database.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
+            self.import_supply('wasted', i_batch_id, i_product_barcode, i_expiration_date,i_quantity, i_weight )
 
-def export_database_contents_csv(supply_filename,product_filename):          
-    database_contents=database.get_all_supply("1970-02-02","2038-01-18","","")
+def export_database_contents_csv(supply_filename,product_filename):  
+    database_contents=self.get_all_supply("1970-02-02","2038-01-18","","")
     product_export_DF=pd.DataFrame.from_dict(database_contents)
     supply_export_DF=pd.DataFrame.from_dict(database_contents)
     product_export_DF=product_export_DF.drop(['batch_id', 'expiration_date', 'weight', 'quantity', 'status'], axis=1)
