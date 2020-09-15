@@ -478,12 +478,15 @@ class Frontend:
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
 <<<<<<< HEAD
+<<<<<<< HEAD
         if self.quantity.isdecimal():
             exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
         try:
             if float(self.weight) <= 0:
                 exception_window.pop_up_window("Weight value must be positive!",
 =======
+=======
+>>>>>>> origin/integration
 
 
         if not self.quantity and self.weight:
@@ -494,6 +497,7 @@ class Frontend:
                                                    "MANAGE SUPPLY EXCEPTION")
             except ValueError:
                 exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+<<<<<<< HEAD
 >>>>>>> 8a4361b0b1bde79676bc31caec9670c79bf7ab26
                                                "MANAGE SUPPLY EXCEPTION")
             sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
@@ -515,6 +519,28 @@ class Frontend:
             sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
             print(sell_response)
 
+=======
+                                               "MANAGE SUPPLY EXCEPTION")
+            sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
+            print(sell_response)
+
+        if self.quantity and not self.weight:
+
+            if not self.quantity.isdecimal():
+                exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
+
+            try:
+                self.quantity = int(self.quantity)
+                if self.quantity <= 0:
+                    exception_window.pop_up_window("Quantity value must be positive!",
+                                                   "MANAGE SUPPLY EXCEPTION")
+            except ValueError:
+                exception_window.pop_up_window("Quantity must have a positive numerical value!",
+                                               "MANAGE SUPPLY EXCEPTION")
+            sell_response = self.DatabaseBackend.sell_item(self.barcode, self.weight, self.quantity)
+            print(sell_response)
+
+>>>>>>> origin/integration
         if self.quantity and self.weight:
             exception_window.pop_up_window(
                 "Do not enter both values weight and quantity!",
@@ -543,12 +569,15 @@ class Frontend:
         else:
             exception_window.pop_up_window("Use only digits in Barcode entry!", "MANAGE SUPPLY EXCEPTION")
 <<<<<<< HEAD
+<<<<<<< HEAD
         if self.quantity.isdecimal():
             exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
         try:
             if float(self.weight) <= 0:
                 exception_window.pop_up_window("Weight value must be positive!",
 =======
+=======
+>>>>>>> origin/integration
 
 
         if not self.quantity and self.weight:
@@ -559,6 +588,7 @@ class Frontend:
                                                    "MANAGE SUPPLY EXCEPTION")
             except ValueError:
                 exception_window.pop_up_window("Weight must have a positive numerical value separated by dots (.)!",
+<<<<<<< HEAD
 >>>>>>> 8a4361b0b1bde79676bc31caec9670c79bf7ab26
                                                "MANAGE SUPPLY EXCEPTION")
             wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
@@ -566,6 +596,14 @@ class Frontend:
 
         if self.quantity and not self.weight:
 
+=======
+                                               "MANAGE SUPPLY EXCEPTION")
+            wasted_response = self.DatabaseBackend.classify_as_wasted(self.barcode, self.weight, self.quantity)
+            print(wasted_response)
+
+        if self.quantity and not self.weight:
+
+>>>>>>> origin/integration
             if not self.quantity.isdecimal():
                 exception_window.pop_up_window("Quantity must be a numerical value!", "MANAGE SUPPLY EXCEPTION")
 
