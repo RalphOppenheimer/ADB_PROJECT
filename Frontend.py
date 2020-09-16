@@ -107,8 +107,8 @@ class Frontend:
         self.tree.column("6", width=150, anchor='c')
         self.tree.column("7", width=100, anchor='c')
         self.tree.column("8", width=100, anchor='c')
-        self.tree.insert("", 'end', text="L1",
-                         values=("Big1", "Best", "Ahjo1", "21-37-2137", "420.69", "Wasted", "123", "42"))
+        # self.tree.insert("", 'end', text="L1",
+        #                  values=("Big1", "Best", "Ahjo1", "21-37-2137", "420.69", "Wasted", "123", "42"))
 
         # Labels for naming:
         self.l_add_name = tk.Label(self.lf_add_item, text='Name: ')
@@ -375,24 +375,24 @@ class Frontend:
             We assume, that adding a category and name at the same time is pointless,
             so in that case, we take only name into account
         """
-        try:
-            if self.hi_date > self.lo_date:
-                self.category = self.e_prod_category.get()
-                self.add_name = self.e_prod_name.get()
-                if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
-                        self.add_name) > 0:
-                    print("ShowAvSupply: GOOD!")
-                    self.data_records_buffer = pd.from_dict(
-                        self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
-                                                                  self.add_name))
-                    print(self.data_records_buffer)
-                else:
-                    exception_window.pop_up_window("Only Category or only Name can be inserted!",
-                                                   "PRODUCT MANAGEMENT EXCEPTION")
+    # try:
+        if self.hi_date > self.lo_date:
+            self.category = self.e_prod_category.get()
+            self.add_name = self.e_prod_name.get()
+            if len(self.category) > 0 and len(self.add_name) == 0 or len(self.category) == 0 and len(
+                    self.add_name) > 0:
+                print("ShowAvSupply: GOOD!")
+                self.data_records_buffer =  self.DatabaseBackend.get_available_supply(self.lo_date, self.hi_date, self.category,
+                                                              self.add_name)
+                self.InsertData()
+                print(self.data_records_buffer)
             else:
-                exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION")
-        except:
-            exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
+                exception_window.pop_up_window("Only Category or only Name can be inserted!",
+                                               "PRODUCT MANAGEMENT EXCEPTION")
+        else:
+            exception_window.pop_up_window("Invalid date constrains!", "PRODUCT MANAGEMENT EXCEPTION")
+    # except:
+    #     exception_window.pop_up_window("Invalid date constrains! or entries", "PRODUCT MANAGEMENT EXCEPTION")
 
     def ShowSoldSupply(self):
         # ALL BUFFERS should be initially RESET

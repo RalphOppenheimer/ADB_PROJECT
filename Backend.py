@@ -131,6 +131,7 @@ class Database:
 
         return self.get_supply('available',lower_date, upper_date, category, name)
 
+
     def get_sold_supply(self, lower_date, upper_date, category, name):
         """
             Shows sold supplies for all tables based on the specified date constrains.
